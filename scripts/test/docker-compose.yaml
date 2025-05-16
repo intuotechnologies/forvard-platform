@@ -1,0 +1,15 @@
+version: '3.8' # Specifica la versione di Docker Compose
+
+services:
+  r_script_runner: # Nome del servizio
+    build:
+      context: ./r_app # Path relativo alla directory contenente il Dockerfile
+      dockerfile: Dockerfile
+    container_name: portainer_r_test_container # Nome che avrà il container
+    # restart: 'no' # Esegue lo script una volta e poi il container si ferma.
+                   # Utile per controllare i log e vedere se ha funzionato.
+                   # Se vuoi che il container rimanga attivo (es. per un servizio),
+                   # potresti omettere questa riga o usare 'unless-stopped'.
+                   # Per questo test, 'no' o 'on-failure' è una buona scelta.
+    restart: on-failure # Riprova solo se lo script fallisce (es. exit code non zero)
+                        # Se lo script R termina con successo (exit code 0), il container si ferma.

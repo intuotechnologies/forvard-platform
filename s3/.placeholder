@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  r_script_runner:
+    build:
+      context: ./r_app # Path relativo a questa directory docker-compose.yaml
+      dockerfile: Dockerfile
+    container_name: forvard_r_test_runner
+    environment:
+      # Esempio per PostgreSQL (devono corrispondere al servizio app_postgres)
+      POSTGRES_HOST: app_postgres # Nome del servizio definito nel compose di postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_APP_USER:-appuser} # Idealmente leggi da un .env condiviso o specifico
+      POSTGRES_PASSWORD: ${POSTGRES_APP_PASSWORD:-appsecretpassword}
+      POSTGRES_DB: ${POSTGRES_APP_DB:-appdb}
+      MINIO_ENDPOINT_URL: "http://minio:9000" # Nome del servizio definito nel compose di s3
+      MINIO_ACCESS_KEY: ${MINIO_USER:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_PASSWORD:-minioSuperSecret}
+      # AWS_S3_USE_SSL: 0 # O una variabile simile se il tuo script R usa aws.s3 e MinIO non ha SSL
+    restart: on-failure
+    # Per debug, potresti voler tenere il container attivo:
+    # stdin_open: true
+    # tty: true
+    # command: ["tail", "-f", "/dev/null"] # E poi fai exec per eseguire lo script
+    networks:
+      - forvard_default_network # Usa la rete condivisa
+
+networks:
+  forvard_default_network:
+    external: true
+    name: forvard_network
