@@ -21,6 +21,7 @@ jobs:
       with:
         context: ./api
         push: false
+        load: true
         tags: forvard-api:test
         cache-from: type=gha
         cache-to: type=gha,mode=max
