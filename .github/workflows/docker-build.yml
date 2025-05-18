@@ -1,0 +1,74 @@
+name: Docker Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+    
+    - name: Build API Docker image
+      uses: docker/build-push-action@v4
+      with:
+        context: ./api
+        push: false
+        tags: forvard-api:test
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+    
+    - name: Test API container
+      run: |
+        # Create network
+        docker network create forvard_network || true
+        
+        # Create volume for logs and uploads
+        docker volume create forvard_logs || true
+        
+        # Run container in the background
+        docker run -d \
+          --name forvard_api_test \
+          --network forvard_network \
+          -p 8000:8000 \
+          -e JWT_SECRET_KEY="test_jwt_secret_key" \
+          -e SESSION_SECRET_KEY="test_session_secret_key" \
+          -e USE_SQLITE_FOR_TESTS="true" \
+          -v forvard_logs:/app/logs \
+          forvard-api:test
+        
+        # Wait for container to start
+        sleep 10
+        
+        # Check if container is running
+        if [ "$(docker inspect -f {{.State.Running}} forvard_api_test)" = "true" ]; then
+          echo "API container is running successfully"
+          
+          # Test API endpoint
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/docs)
+          if [ "$RESPONSE" = "200" ]; then
+            echo "API endpoint is responding correctly"
+            exit 0
+          else
+            echo "API endpoint returned status $RESPONSE"
+            docker logs forvard_api_test
+            exit 1
+          fi
+        else
+          echo "API container failed to start"
+          docker logs forvard_api_test
+          exit 1
+        fi
+    
+    - name: Cleanup
+      if: always()
+      run: |
+        docker rm -f forvard_api_test || true
+        docker network rm forvard_network || true 
