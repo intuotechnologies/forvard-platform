@@ -36,23 +36,25 @@ jobs:
         cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/forvard-api:buildcache
         cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/forvard-api:buildcache,mode=max
     
-    - name: Deploy to server
-      uses: appleboy/ssh-action@v0.1.10
-      with:
-        host: ${{ secrets.DEPLOY_HOST }}
-        username: ${{ secrets.DEPLOY_USER }}
-        key: ${{ secrets.DEPLOY_KEY }}
-        script: |
-          cd /opt/forvard-platform
-          git pull
-          docker-compose pull
-          docker-compose up -d
+    # Deploy tramite SSH (commentato per ora)
+    # - name: Deploy to server
+    #   uses: appleboy/ssh-action@v0.1.10
+    #   with:
+    #     host: ${{ secrets.DEPLOY_HOST }}
+    #     username: ${{ secrets.DEPLOY_USER }}
+    #     key: ${{ secrets.DEPLOY_KEY }}
+    #     script: |
+    #       cd /opt/forvard-platform
+    #       git pull
+    #       docker-compose pull
+    #       docker-compose up -d
     
-    - name: Notify deployment success
-      uses: rtCamp/action-slack-notify@v2
-      env:
-        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-        SLACK_CHANNEL: deployments
-        SLACK_TITLE: Deployment Successful
-        SLACK_MESSAGE: 'ForVARD Platform API has been deployed to production :rocket:'
-        SLACK_COLOR: good 
+    # Notifiche Slack (commentate per ora)
+    # - name: Notify deployment success
+    #   uses: rtCamp/action-slack-notify@v2
+    #   env:
+    #     SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+    #     SLACK_CHANNEL: deployments
+    #     SLACK_TITLE: Deployment Successful
+    #     SLACK_MESSAGE: 'ForVARD Platform API has been deployed to production :rocket:'
+    #     SLACK_COLOR: good 
