@@ -1,5 +1,5 @@
-from sqladmin import Admin, ModelView
-from sqlalchemy import Column, String, Integer, ForeignKey, DateTime, Boolean, Table
+from sqladmin import Admin, ModelView, BaseView
+from sqlalchemy import Column, String, Integer, ForeignKey, DateTime, Boolean, Table, func, text
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
@@ -8,6 +8,13 @@ from fastapi.staticfiles import StaticFiles
 import os
 from ..core.database import engine
 from .auth import AdminAuth
+from wtforms import StringField, PasswordField
+from wtforms.validators import DataRequired
+import uuid
+import logging
+from fastapi import Request
+from fastapi.responses import RedirectResponse
+from pathlib import Path
 
 # SQLAlchemy models for admin panels
 Base = declarative_base()
@@ -24,6 +31,9 @@ class User(Base):
     
     # Relationship to role
     role = relationship("Role", back_populates="users")
+    
+    def __str__(self):
+        return self.email
 
 
 class Role(Base):
@@ -36,6 +46,9 @@ class Role(Base):
     users = relationship("User", back_populates="role")
     # Relationship to access limits
     access_limits = relationship("AssetAccessLimit", back_populates="role")
+    
+    def __str__(self):
+        return self.role_name
 
 
 class AssetAccessLimit(Base):
@@ -48,6 +61,9 @@ class AssetAccessLimit(Base):
     
     # Relationship to role
     role = relationship("Role", back_populates="access_limits")
+    
+    def __str__(self):
+        return f"{self.asset_category} ({self.max_items})"
 
 
 # Admin views
@@ -65,15 +81,72 @@ class UserAdmin(ModelView, model=User):
     can_export = True
     page_size = 25
     
-    # Customize form options for password
+    # Customize form options
     form_excluded_columns = [User.password_hash, User.created_at, User.updated_at]
     
-    # Add custom field for password when creating/editing users
+    # Add form args
     form_args = {
         "role_id": {
             "label": "Role"
         }
     }
+    
+    column_labels = {
+        User.role_id: "Role"
+    }
+    
+    # Show relationship using role name
+    column_formatters_detail = {
+        User.role_id: lambda m, a: m.role.role_name if m.role else ""
+    }
+    
+    # Override form creation to add password field
+    async def scaffold_form(self):
+        form_class = await super().scaffold_form()
+        form_class.password = PasswordField(
+            "Password", 
+            validators=[DataRequired()],
+            render_kw={
+                "class": "form-control", 
+                "placeholder": "Enter a password for this user",
+                "autocomplete": "new-password",
+                "style": "border: 2px solid #007bff;"
+            }
+        )
+        return form_class
+    
+    async def insert_model(self, request, data):
+        """Override insert_model to handle password hashing"""
+        # Log di debug
+        logger = logging.getLogger(__name__)
+        logger.info(f"Insert model called with data keys: {list(data.keys())}")
+        
+        # Handle password
+        if "password" in data and data["password"]:
+            from ..core.security import get_password_hash
+            data["password_hash"] = get_password_hash(data["password"])
+            logger.info(f"Password hash creato dalla password inserita")
+            del data["password"]
+        else:
+            # Se non c'è password, imposta un valore di default
+            logger.warning("Password non trovata nei dati!")
+            from ..core.security import get_password_hash
+            data["password_hash"] = get_password_hash("default_password")
+            logger.info(f"Password hash di default impostato")
+        
+        # Generate UUID if not provided
+        if "user_id" not in data or not data["user_id"]:
+            data["user_id"] = str(uuid.uuid4())
+            
+        return await super().insert_model(request, data)
+        
+    async def after_model_change(self, data, model, is_created):
+        """Log dopo la creazione del modello"""
+        logger = logging.getLogger(__name__)
+        if is_created:
+            logger.info(f"Nuovo utente creato: {model.email}")
+            if hasattr(model, 'password') and not model.password:
+                logger.info("Utente creato con password predefinita. Chiedi all'amministratore per il reset.")
 
 
 class RoleAdmin(ModelView, model=Role):
@@ -83,6 +156,12 @@ class RoleAdmin(ModelView, model=Role):
     column_list = [Role.role_id, Role.role_name]
     column_searchable_list = [Role.role_name]
     can_export = True
+    
+    # Better display for relationships
+    column_formatters_detail = {
+        "users": lambda m, a: ", ".join([user.email for user in m.users]) if m.users else "",
+        "access_limits": lambda m, a: ", ".join([f"{limit.asset_category} ({limit.max_items})" for limit in m.access_limits]) if m.access_limits else ""
+    }
 
 
 class AssetAccessLimitAdmin(ModelView, model=AssetAccessLimit):
@@ -96,11 +175,80 @@ class AssetAccessLimitAdmin(ModelView, model=AssetAccessLimit):
         AssetAccessLimit.max_items
     ]
     can_export = True
+    
+    # Add form args to better handle role selection
     form_args = {
         "role_id": {
             "label": "Role"
+        },
+        "asset_category": {
+            "label": "Asset Category"
+        },
+        "max_items": {
+            "label": "Maximum Items"
         }
     }
+    
+    # Format the role_id column more safely - avoid detached instance errors
+    column_formatters = {
+        AssetAccessLimit.role_id: lambda m, a: str(m.role_id)
+    }
+    
+    column_labels = {
+        AssetAccessLimit.role_id: "Role",
+        AssetAccessLimit.asset_category: "Asset Category",
+        AssetAccessLimit.max_items: "Maximum Items"
+    }
+
+    # Use eager loading to avoid DetachedInstanceError
+    column_select_related_list = ["role"]
+    
+    # Add safe error handling for model operations
+    async def insert_model(self, request, data):
+        """Handle insert with better error handling"""
+        logger = logging.getLogger(__name__)
+        logger.info(f"Inserting asset access limit with data: {data}")
+        try:
+            return await super().insert_model(request, data)
+        except Exception as e:
+            logger.error(f"Error inserting asset access limit: {str(e)}")
+            raise
+    
+    async def update_model(self, request, model, data):
+        """Handle update with better error handling"""
+        logger = logging.getLogger(__name__)
+        logger.info(f"Updating asset access limit ID {model.limit_id} with data: {data}")
+        try:
+            return await super().update_model(request, model, data)
+        except Exception as e:
+            logger.error(f"Error updating asset access limit: {str(e)}")
+            raise
+    
+    async def delete_model(self, request, model):
+        """Handle delete with better error handling"""
+        logger = logging.getLogger(__name__)
+        logger.info(f"Deleting asset access limit ID {model.limit_id}")
+        try:
+            return await super().delete_model(request, model)
+        except Exception as e:
+            logger.error(f"Error deleting asset access limit: {str(e)}")
+            raise
+            
+    # Override scaffold_form to customize the form
+    async def scaffold_form(self):
+        form_class = await super().scaffold_form()
+        
+        # Add custom validation for asset_category - fix the check for field existence
+        if hasattr(form_class, 'asset_category'):
+            form_class.asset_category.validators = [DataRequired()]
+            form_class.asset_category.render_kw = {"placeholder": "Enter asset category (e.g., stocks, futures, exchange_rates)"}
+            
+        # Add custom validation for max_items
+        if hasattr(form_class, 'max_items'):
+            form_class.max_items.validators = [DataRequired()]
+            form_class.max_items.render_kw = {"placeholder": "Enter maximum allowed items"}
+            
+        return form_class
 
 
 # Setup function for admin
@@ -114,14 +262,19 @@ def setup_admin(app: FastAPI) -> None:
     # Create authentication backend
     authentication_backend = AdminAuth(secret_key=session_key)
     
-    # Create admin interface
+    # Setup logging for admin
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
+    
+    # Create admin interface with enhanced configuration
     admin = Admin(
         app, 
         engine,
         authentication_backend=authentication_backend,
         title="ForVARD Admin",
         base_url="/admin",
-        logo_url="https://fastapi.tiangolo.com/img/logo-margin/logo-teal.png"
+        logo_url="https://fastapi.tiangolo.com/img/logo-margin/logo-teal.png",
+        debug=True  # Enable debug mode for better error reporting
     )
     
     # Add model views
@@ -129,4 +282,6 @@ def setup_admin(app: FastAPI) -> None:
     admin.add_view(RoleAdmin)
     admin.add_view(AssetAccessLimitAdmin)
     
-    return admin 
+    logger.info("Admin panel successfully configured")
+    
+    return admin
