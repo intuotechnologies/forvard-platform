@@ -1,0 +1,382 @@
+2025-05-18 21:05:08.034 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:05:08.034 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:05:08.771 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:05:08.772 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:05:09.491 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:05:09.491 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:05:10.286 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:05:10.286 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:05:10.996 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:05:10.997 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:05:11.791 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:05:11.791 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:05:12.557 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:05:12.558 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:05:13.267 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:05:13.267 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:05:14.186 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:05:14.187 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:05:14.991 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:05:14.992 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:05:15.982 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:05:15.982 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:05:16.782 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:05:16.782 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:05:17.558 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:05:17.558 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:05:18.302 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:05:18.303 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:05:19.330 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:05:19.331 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:05:22.169 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:05:22.170 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:05:23.084 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:05:23.084 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:05:23.850 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:05:23.851 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:05:24.567 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:05:24.567 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:05:32.689 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:05:32.689 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:05:33.581 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:05:33.582 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:05:41.952 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:05:41.953 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:05:48.955 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:05:48.955 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:05:52.547 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:05:52.547 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:06:04.856 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:06:04.856 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:06:19.139 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:06:19.139 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:06:20.092 | INFO | app.main:add_process_time_header:63 - Request received: GET /
+2025-05-18 21:06:20.093 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-18 21:06:20.622 | INFO | app.main:add_process_time_header:63 - Request received: GET /favicon.ico
+2025-05-18 21:06:20.634 | INFO | app.main:add_process_time_header:78 - Response sent: 404
+2025-05-18 21:06:24.218 | INFO | app.main:add_process_time_header:63 - Request received: GET /docs
+2025-05-18 21:06:24.224 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-18 21:06:24.451 | INFO | app.main:add_process_time_header:63 - Request received: GET /openapi.json
+2025-05-18 21:06:24.485 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-18 21:06:31.497 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:06:31.498 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:06:31.992 | INFO | app.main:add_process_time_header:63 - Request received: GET /health
+2025-05-18 21:06:32.127 | WARNING | app.core.database:check_db_connection:48 - Database connection attempt 1/5 failed: (psycopg2.OperationalError) connection to server at "79.72.44.95", port 5432 failed: FATAL:  password authentication failed for user "postgres"
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-05-18 21:06:32.127 | INFO | app.core.database:check_db_connection:50 - Retrying in 5 seconds...
+2025-05-18 21:06:37.217 | WARNING | app.core.database:check_db_connection:48 - Database connection attempt 2/5 failed: (psycopg2.OperationalError) connection to server at "79.72.44.95", port 5432 failed: FATAL:  password authentication failed for user "postgres"
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-05-18 21:06:37.219 | INFO | app.core.database:check_db_connection:50 - Retrying in 5 seconds...
+2025-05-18 21:06:42.288 | WARNING | app.core.database:check_db_connection:48 - Database connection attempt 3/5 failed: (psycopg2.OperationalError) connection to server at "79.72.44.95", port 5432 failed: FATAL:  password authentication failed for user "postgres"
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-05-18 21:06:42.289 | INFO | app.core.database:check_db_connection:50 - Retrying in 5 seconds...
+2025-05-18 21:06:47.673 | WARNING | app.core.database:check_db_connection:48 - Database connection attempt 4/5 failed: (psycopg2.OperationalError) connection to server at "79.72.44.95", port 5432 failed: FATAL:  password authentication failed for user "postgres"
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-05-18 21:06:47.678 | INFO | app.core.database:check_db_connection:50 - Retrying in 5 seconds...
+2025-05-18 21:06:52.750 | WARNING | app.core.database:check_db_connection:48 - Database connection attempt 5/5 failed: (psycopg2.OperationalError) connection to server at "79.72.44.95", port 5432 failed: FATAL:  password authentication failed for user "postgres"
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-05-18 21:06:52.750 | ERROR | app.core.database:check_db_connection:53 - All database connection attempts failed
+2025-05-18 21:06:52.753 | INFO | app.main:add_process_time_header:78 - Response sent: 503
+2025-05-18 21:06:54.069 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:06:54.070 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:06:56.675 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:06:56.675 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:07:08.676 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:07:08.677 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:07:10.086 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin
+2025-05-18 21:07:10.088 | INFO | app.main:add_process_time_header:78 - Response sent: 307
+2025-05-18 21:07:10.093 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/
+2025-05-18 21:07:10.094 | INFO | app.main:add_process_time_header:78 - Response sent: 302
+2025-05-18 21:07:10.096 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/login
+2025-05-18 21:07:10.106 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-18 21:07:10.137 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/css/tabler.min.css
+2025-05-18 21:07:10.198 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/css/tabler-icons.min.css
+2025-05-18 21:07:10.199 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-18 21:07:10.214 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/css/fontawesome.min.css
+2025-05-18 21:07:10.227 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/css/select2.min.css
+2025-05-18 21:07:10.230 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/css/flatpickr.min.css
+2025-05-18 21:07:10.238 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/css/main.css
+2025-05-18 21:07:10.240 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-18 21:07:10.244 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-18 21:07:10.267 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-18 21:07:10.270 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-18 21:07:10.270 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-18 21:07:10.319 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/js/jquery.min.js
+2025-05-18 21:07:10.320 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/js/tabler.min.js
+2025-05-18 21:07:10.323 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/js/popper.min.js
+2025-05-18 21:07:10.337 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/js/bootstrap.min.js
+2025-05-18 21:07:10.350 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-18 21:07:10.351 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-18 21:07:10.356 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-18 21:07:10.357 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-18 21:07:10.360 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/js/select2.full.min.js
+2025-05-18 21:07:10.363 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/js/flatpickr.min.js
+2025-05-18 21:07:10.373 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/js/main.js
+2025-05-18 21:07:10.374 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-18 21:07:10.375 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-18 21:07:10.378 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-18 21:07:16.296 | INFO | app.main:add_process_time_header:63 - Request received: POST /admin/login
+2025-05-18 21:07:16.426 | INFO | app.main:add_process_time_header:78 - Response sent: 400
+2025-05-18 21:07:22.007 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:07:22.016 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:07:37.039 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:07:37.039 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:07:48.432 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:07:48.433 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:08:01.468 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:08:01.469 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:08:12.763 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:08:12.764 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:08:13.636 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:08:13.637 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:08:21.761 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:08:21.762 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:08:22.565 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:08:22.566 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:08:35.111 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:08:35.111 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:08:49.012 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:08:49.013 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:09:01.030 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:09:01.031 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:09:13.204 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:09:13.204 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:09:26.563 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:09:26.564 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:09:37.988 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:09:37.989 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:09:38.737 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:09:38.737 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:10:10.610 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:10:10.611 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:10:13.444 | INFO | app.main:add_process_time_header:63 - Request received: POST /admin/login
+2025-05-18 21:10:13.621 | INFO | app.main:add_process_time_header:78 - Response sent: 400
+2025-05-18 21:10:13.648 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/css/tabler.min.css
+2025-05-18 21:10:13.656 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/css/tabler-icons.min.css
+2025-05-18 21:10:13.675 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/css/fontawesome.min.css
+2025-05-18 21:10:13.675 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/css/flatpickr.min.css
+2025-05-18 21:10:13.684 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/css/select2.min.css
+2025-05-18 21:10:13.685 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/css/main.css
+2025-05-18 21:10:13.686 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:10:13.687 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:10:13.689 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/js/jquery.min.js
+2025-05-18 21:10:13.691 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:10:13.692 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/js/tabler.min.js
+2025-05-18 21:10:13.694 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:10:13.694 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:10:13.701 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:10:13.702 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/js/bootstrap.min.js
+2025-05-18 21:10:13.706 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/js/select2.full.min.js
+2025-05-18 21:10:13.706 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/js/main.js
+2025-05-18 21:10:13.707 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/js/popper.min.js
+2025-05-18 21:10:13.708 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:10:13.710 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:10:13.715 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:10:13.716 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/js/flatpickr.min.js
+2025-05-18 21:10:13.722 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:10:13.722 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:10:13.722 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:10:13.724 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:10:33.160 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:10:33.161 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:10:54.613 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:10:54.613 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:11:06.781 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:11:06.782 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:11:07.502 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:11:07.503 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:11:32.306 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:11:32.307 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:11:43.862 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:11:43.863 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:11:56.562 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:11:56.562 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:11:57.413 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:11:57.413 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:12:07.012 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:12:07.013 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:12:21.544 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:12:21.545 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:12:51.092 | INFO | app.main:add_process_time_header:63 - Request received: POST /admin/login
+2025-05-18 21:12:51.210 | INFO | app.main:add_process_time_header:78 - Response sent: 400
+2025-05-18 21:12:51.261 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/css/tabler.min.css
+2025-05-18 21:12:51.306 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/css/tabler-icons.min.css
+2025-05-18 21:12:51.309 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/css/fontawesome.min.css
+2025-05-18 21:12:51.316 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/css/select2.min.css
+2025-05-18 21:12:51.317 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/css/flatpickr.min.css
+2025-05-18 21:12:51.328 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/css/main.css
+2025-05-18 21:12:51.359 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:12:51.361 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:12:51.363 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:12:51.367 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:12:51.367 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:12:51.368 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/js/jquery.min.js
+2025-05-18 21:12:51.370 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/js/tabler.min.js
+2025-05-18 21:12:51.371 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/js/popper.min.js
+2025-05-18 21:12:51.373 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/js/bootstrap.min.js
+2025-05-18 21:12:51.373 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/js/select2.full.min.js
+2025-05-18 21:12:51.377 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:12:51.380 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:12:51.381 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:12:51.382 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/js/flatpickr.min.js
+2025-05-18 21:12:51.383 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/js/main.js
+2025-05-18 21:12:51.383 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:12:51.384 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:12:51.386 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:12:51.407 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:12:51.414 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:13:27.805 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:13:27.807 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:14:43.779 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:14:43.780 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:14:50.832 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:14:50.832 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:14:55.245 | INFO | app.main:add_process_time_header:63 - Request received: GET /
+2025-05-18 21:14:55.269 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-18 21:14:55.824 | INFO | app.main:add_process_time_header:63 - Request received: GET /favicon.ico
+2025-05-18 21:14:55.827 | INFO | app.main:add_process_time_header:78 - Response sent: 404
+2025-05-18 21:15:00.585 | INFO | app.main:add_process_time_header:63 - Request received: GET /docs
+2025-05-18 21:15:00.603 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-18 21:15:00.836 | INFO | app.main:add_process_time_header:63 - Request received: GET /openapi.json
+2025-05-18 21:15:00.876 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-18 21:15:06.177 | INFO | app.main:add_process_time_header:63 - Request received: GET /health
+2025-05-18 21:15:06.298 | WARNING | app.core.database:check_db_connection:48 - Database connection attempt 1/5 failed: (psycopg2.OperationalError) connection to server at "79.72.44.95", port 5432 failed: FATAL:  password authentication failed for user "postgres"
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-05-18 21:15:06.299 | INFO | app.core.database:check_db_connection:50 - Retrying in 5 seconds...
+2025-05-18 21:15:11.364 | WARNING | app.core.database:check_db_connection:48 - Database connection attempt 2/5 failed: (psycopg2.OperationalError) connection to server at "79.72.44.95", port 5432 failed: FATAL:  password authentication failed for user "postgres"
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-05-18 21:15:11.365 | INFO | app.core.database:check_db_connection:50 - Retrying in 5 seconds...
+2025-05-18 21:15:16.441 | WARNING | app.core.database:check_db_connection:48 - Database connection attempt 3/5 failed: (psycopg2.OperationalError) connection to server at "79.72.44.95", port 5432 failed: FATAL:  password authentication failed for user "postgres"
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-05-18 21:15:16.443 | INFO | app.core.database:check_db_connection:50 - Retrying in 5 seconds...
+2025-05-18 21:15:21.811 | WARNING | app.core.database:check_db_connection:48 - Database connection attempt 4/5 failed: (psycopg2.OperationalError) connection to server at "79.72.44.95", port 5432 failed: FATAL:  password authentication failed for user "postgres"
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-05-18 21:15:21.816 | INFO | app.core.database:check_db_connection:50 - Retrying in 5 seconds...
+2025-05-18 21:15:26.880 | WARNING | app.core.database:check_db_connection:48 - Database connection attempt 5/5 failed: (psycopg2.OperationalError) connection to server at "79.72.44.95", port 5432 failed: FATAL:  password authentication failed for user "postgres"
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-05-18 21:15:26.881 | ERROR | app.core.database:check_db_connection:53 - All database connection attempts failed
+2025-05-18 21:15:26.882 | INFO | app.main:add_process_time_header:78 - Response sent: 503
+2025-05-18 21:25:57.726 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:25:57.728 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:26:05.268 | INFO | app.main:add_process_time_header:63 - Request received: GET /
+2025-05-18 21:26:05.269 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-18 21:26:08.294 | INFO | app.main:add_process_time_header:63 - Request received: GET /docs
+2025-05-18 21:26:08.297 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-18 21:26:08.607 | INFO | app.main:add_process_time_header:63 - Request received: GET /openapi.json
+2025-05-18 21:26:08.655 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-18 21:26:12.048 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin
+2025-05-18 21:26:12.050 | INFO | app.main:add_process_time_header:78 - Response sent: 307
+2025-05-18 21:26:12.054 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/
+2025-05-18 21:26:12.057 | INFO | app.main:add_process_time_header:78 - Response sent: 302
+2025-05-18 21:26:12.060 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/login
+2025-05-18 21:26:12.072 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-18 21:26:12.091 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/css/tabler.min.css
+2025-05-18 21:26:12.114 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/css/fontawesome.min.css
+2025-05-18 21:26:12.115 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/css/tabler-icons.min.css
+2025-05-18 21:26:12.118 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/css/select2.min.css
+2025-05-18 21:26:12.119 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/css/flatpickr.min.css
+2025-05-18 21:26:12.122 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/css/main.css
+2025-05-18 21:26:12.128 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:26:12.130 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:26:12.130 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:26:12.130 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:26:12.131 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/js/jquery.min.js
+2025-05-18 21:26:12.133 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:26:12.137 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:26:12.138 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/js/tabler.min.js
+2025-05-18 21:26:12.138 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/js/popper.min.js
+2025-05-18 21:26:12.138 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/js/bootstrap.min.js
+2025-05-18 21:26:12.139 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/js/select2.full.min.js
+2025-05-18 21:26:12.141 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/js/flatpickr.min.js
+2025-05-18 21:26:12.146 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:26:12.147 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:26:12.147 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:26:12.153 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:26:12.159 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/js/main.js
+2025-05-18 21:26:12.160 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:26:12.161 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:26:12.173 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:26:22.312 | INFO | app.main:add_process_time_header:63 - Request received: POST /admin/login
+2025-05-18 21:26:22.567 | INFO | app.main:add_process_time_header:78 - Response sent: 400
+2025-05-18 21:26:42.558 | INFO | app.main:add_process_time_header:63 - Request received: POST /admin/login
+2025-05-18 21:26:42.876 | INFO | app.main:add_process_time_header:78 - Response sent: 400
+2025-05-18 21:27:20.651 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:27:20.653 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:27:22.311 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:27:22.311 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:27:55.778 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:27:55.779 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:27:58.611 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/login
+2025-05-18 21:27:58.622 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-18 21:28:17.232 | INFO | app.main:add_process_time_header:63 - Request received: POST /admin/login
+2025-05-18 21:28:17.724 | INFO | app.main:add_process_time_header:78 - Response sent: 302
+2025-05-18 21:28:17.730 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/
+2025-05-18 21:28:17.731 | INFO | app.main:add_process_time_header:78 - Response sent: 302
+2025-05-18 21:28:17.733 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/login
+2025-05-18 21:28:17.734 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-18 21:29:38.597 | INFO | app.main:add_process_time_header:63 - Request received: POST /admin/login
+2025-05-18 21:29:38.965 | INFO | app.main:add_process_time_header:78 - Response sent: 302
+2025-05-18 21:29:39.024 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/
+2025-05-18 21:29:39.047 | INFO | app.main:add_process_time_header:78 - Response sent: 302
+2025-05-18 21:29:39.058 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/login
+2025-05-18 21:29:39.062 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-18 21:29:39.122 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/css/tabler.min.css
+2025-05-18 21:29:39.151 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/css/tabler-icons.min.css
+2025-05-18 21:29:39.237 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/css/fontawesome.min.css
+2025-05-18 21:29:39.238 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/css/select2.min.css
+2025-05-18 21:29:39.267 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/css/flatpickr.min.css
+2025-05-18 21:29:39.272 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/css/main.css
+2025-05-18 21:29:39.303 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:29:39.304 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:29:39.306 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:29:39.307 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:29:39.308 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/js/jquery.min.js
+2025-05-18 21:29:39.315 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/js/tabler.min.js
+2025-05-18 21:29:39.316 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/js/popper.min.js
+2025-05-18 21:29:39.318 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/js/bootstrap.min.js
+2025-05-18 21:29:39.340 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:29:39.343 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:29:39.347 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/js/select2.full.min.js
+2025-05-18 21:29:39.348 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/js/flatpickr.min.js
+2025-05-18 21:29:39.358 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:29:39.360 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:29:39.361 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:29:39.369 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/js/main.js
+2025-05-18 21:29:39.373 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:29:39.380 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:29:39.384 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:29:39.388 | INFO | app.main:add_process_time_header:78 - Response sent: 304
+2025-05-18 21:30:14.190 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/login
+2025-05-18 21:30:14.198 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-18 21:30:24.723 | INFO | app.main:add_process_time_header:63 - Request received: POST /admin/login
+2025-05-18 21:30:24.994 | INFO | app.main:add_process_time_header:78 - Response sent: 302
+2025-05-18 21:30:25.000 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/
+2025-05-18 21:30:25.001 | INFO | app.main:add_process_time_header:78 - Response sent: 302
+2025-05-18 21:30:25.003 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/login
+2025-05-18 21:30:25.004 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-18 21:31:34.715 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-18 21:31:34.715 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-18 21:31:37.218 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/login
+2025-05-18 21:31:37.231 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-18 21:31:48.812 | INFO | app.main:add_process_time_header:63 - Request received: POST /admin/login
+2025-05-18 21:31:49.361 | INFO | app.main:add_process_time_header:78 - Response sent: 302
+2025-05-18 21:31:49.369 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/
+2025-05-18 21:31:49.453 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-18 21:31:49.810 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/statics/webfonts/fa-solid-900.woff2
+2025-05-18 21:31:49.852 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-18 21:31:52.126 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/user/list
+2025-05-18 21:31:52.230 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-18 21:31:54.137 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/role/list
+2025-05-18 21:31:54.213 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-18 21:31:57.316 | INFO | app.main:add_process_time_header:63 - Request received: GET /admin/asset-access-limit/list
+2025-05-18 21:31:57.403 | INFO | app.main:add_process_time_header:78 - Response sent: 200

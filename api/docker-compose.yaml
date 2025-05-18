@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  forvard_api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: forvard_api_service
+    restart: unless-stopped
+    ports:
+      - "${API_PORT:-8000}:8000"
+    environment:
+      DATABASE_URL_API: "postgresql://${POSTGRES_APP_USER:-postgres}:${POSTGRES_APP_PASSWORD:-postgres}@${POSTGRES_DB_HOST:-79.72.44.95}:${POSTGRES_DB_PORT_INTERNAL:-5432}/${POSTGRES_APP_DB:-forvard}"
+      JWT_SECRET_KEY: "${JWT_SECRET_KEY:-forvard_secret_key_change_me_in_production}"
+      ACCESS_TOKEN_EXPIRE_MINUTES: "${ACCESS_TOKEN_EXPIRE_MINUTES:-30}"
+      CORS_ORIGINS: "${CORS_ORIGINS:-http://localhost,http://localhost:3000}"
+      LOG_LEVEL: "${LOG_LEVEL:-INFO}"
+      LOG_FILE: "${LOG_FILE:-/app/logs/api.log}"
+      SESSION_SECRET_KEY: "${SESSION_SECRET_KEY:-forvard_session_key_change_me_in_production}"
+    volumes:
+      - ./app:/app/app
+      - ./logs:/app/logs
+      - ./downloads:/app/downloads
+    networks:
+      - forvard_default_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+networks:
+  forvard_default_network:
+    external: true
+    name: forvard_network 

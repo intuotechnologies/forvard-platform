@@ -1,30 +1,30 @@
+# postgres/docker-compose.yaml
 version: '3.8'
 
 services:
-  # Servizio PostgreSQL per i dati dell'applicazione
+  # Servizio PostgreSQL con TimescaleDB per i dati dell'applicazione
   app_postgres:
-    image: postgres:16 # O la versione che preferisci
+    image: timescale/timescaledb:latest-pg16 # Immagine con PostgreSQL 16 e TimescaleDB
     container_name: forvard_app_postgres
     restart: unless-stopped
-    shm_size: '1g' # Dimensione della memoria condivisa, utile per performance
+    shm_size: '1g'
     environment:
-      POSTGRES_USER: ${POSTGRES_APP_USER:-appuser} # Usa variabili d'ambiente dal file .env o valori di default
+      POSTGRES_USER: ${POSTGRES_APP_USER:-appuser}
       POSTGRES_PASSWORD: ${POSTGRES_APP_PASSWORD:-appsecretpassword}
       POSTGRES_DB: ${POSTGRES_APP_DB:-appdb}
-      PGDATA: /var/lib/postgresql/data/pgdata # Specifica un sottopath per i dati dentro il volume
+      PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - app_postgres_data:/var/lib/postgresql/data # Volume per la persistenza dei dati
-      # Potresti mappare script di inizializzazione .sql o .sh qui, se necessario:
-      # - ./init-scripts:/docker-entrypoint-initdb.d
+      - ./init_db:/docker-entrypoint-initdb.d  # Monta la cartella con gli script SQL di inizializzazione
     ports:
-      - "${POSTGRES_APP_PORT:-5432}:5432" # Esponi sulla porta specificata o default 5432
+      - "${POSTGRES_APP_PORT:-5432}:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_APP_USER:-appuser} -d ${POSTGRES_APP_DB:-appdb}"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
-      - forvard_default_network # Usa la rete condivisa
+      - forvard_default_network
 
   # Servizio pgAdmin per la gestione di PostgreSQL
   pgadmin:
@@ -34,57 +34,43 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@example.com}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-adminpassword}
-      PGADMIN_CONFIG_SERVER_MODE: 'False' # Esegui in modalità desktop, non server (più semplice per uso locale)
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
     volumes:
-      - pgadmin_data:/var/lib/pgadmin # Volume per la persistenza dei dati di pgAdmin (server, configurazioni)
+      - pgadmin_data:/var/lib/pgadmin
     ports:
-      - "${PGADMIN_PORT:-5050}:80" # Esponi pgAdmin sulla porta specificata o default 5050
+      - "${PGADMIN_PORT:-5050}:80"
     depends_on:
       app_postgres:
-        condition: service_healthy # Attendi che PostgreSQL sia healthy
+        condition: service_healthy
     networks:
-      - forvard_default_network # Usa la rete condivisa
+      - forvard_default_network
 
   # Servizio di Backup Esempio (Opzionale, da adattare)
-  # Questo è un esempio base. Per produzione, considera soluzioni più robuste come pgBackRest.
   postgres_backup:
-    image: postgres:16 # Deve avere pg_dump compatibile
+    image: timescale/timescaledb:latest-pg16 # Usa la stessa immagine per compatibilità con pg_dump
     container_name: forvard_postgres_backup
     restart: unless-stopped
     volumes:
-      - ./backups:/backups # Monta una directory locale per salvare i backup
-      # Potresti voler montare uno script di backup personalizzato
-      # - ./backup_script.sh:/usr/local/bin/backup_script.sh
+      - ./backups:/backups # Assicurati che la cartella 'postgres/backups' esista sull'host
     environment:
-      POSTGRES_HOST: app_postgres # Nome del servizio PostgreSQL
+      POSTGRES_HOST: app_postgres
       POSTGRES_USER: ${POSTGRES_APP_USER:-appuser}
       POSTGRES_PASSWORD: ${POSTGRES_APP_PASSWORD:-appsecretpassword}
       POSTGRES_DB: ${POSTGRES_APP_DB:-appdb}
-      # Parametri per lo script di backup (se ne usi uno)
       BACKUP_DIR: /backups
-      FILENAME_FORMAT: "backup_%Y-%m-%d_%H-%M-%S.sql.gz" # Formato del nome file
-      # Configurazione CRON per eseguire il backup (es. ogni giorno alle 02:00)
-      CRON_SCHEDULE: "0 2 * * *"
-    # Il comando esegue uno script che imposta cron e avvia il demone.
-    # Dovresti creare questo script o usare un'immagine con cron preinstallato e configurato.
-    # Per semplicità, qui un esempio di comando che esegue un backup e poi dorme,
-    # ma idealmente useresti un vero cron daemon.
-    # Per un vero cron, potresti usare un'immagine come 'prodrigestivill/postgres-backup-local'
-    # o costruire la tua.
+      CRON_SCHEDULE: "0 2 * * *" # Esegue il backup ogni giorno alle 02:00
+    # Comando per configurare ed eseguire cron.
+    # Questo è un esempio; per produzione, considera un'immagine con cron già configurato
+    # o una soluzione di backup più robusta.
     command: >
       sh -c "
-        echo 'Inizio servizio di backup (esempio base)...';
-        while true; do
-          echo \"CRON_SCHEDULE: ${CRON_SCHEDULE}\" > /etc/cron.d/backup_cron;
-          echo \"${CRON_SCHEDULE} pg_dump -h ${POSTGRES_HOST} -U ${POSTGRES_USER} -d ${POSTGRES_DB} | gzip > ${BACKUP_DIR}/$$(date +%Y-%m-%d_%H-%M-%S).sql.gz && echo 'Backup completato: $$(date)' || echo 'Backup fallito: $$(date)'\" >> /etc/cron.d/backup_cron;
-          chmod 0644 /etc/cron.d/backup_cron;
-          crontab /etc/cron.d/backup_cron;
-          printenv | grep -E 'POSTGRES_|BACKUP_DIR|FILENAME_FORMAT' >> /etc/environment;
-          echo 'Avvio cron...';
-          cron -f & wait $! ; # Avvia cron in foreground
-          echo 'Servizio di backup terminato o riavviato.';
-          sleep 3600; # In caso di fallimento di cron, riprova dopo un'ora
-        done
+        apk add --no-cache busybox-suid; # Aggiunge cron se non presente (per Alpine, l'immagine base di TimescaleDB)
+        echo \"${CRON_SCHEDULE} su-exec postgres pg_dump -h ${POSTGRES_HOST} -U ${POSTGRES_USER} -d ${POSTGRES_DB} | gzip > ${BACKUP_DIR}/backup_$$\(date +\\%Y-\\%m-\\%d_\\%H-\\%M-\\%S).sql.gz 2>&1\" > /etc/cron.d/backup_cron;
+        chmod 0644 /etc/cron.d/backup_cron;
+        crontab /etc/cron.d/backup_cron;
+        printenv | grep -E 'POSTGRES_|BACKUP_DIR|CRON_SCHEDULE' >> /etc/environment;
+        echo 'Avvio cron per backup PostgreSQL...';
+        exec crond -f -d 8;
       "
     depends_on:
       app_postgres:
@@ -93,12 +79,12 @@ services:
       - forvard_default_network
 
 volumes:
-  app_postgres_data: # Definisci il volume per i dati di PostgreSQL
-    driver: local # o un driver specifico se usi storage esterno
-  pgadmin_data: # Definisci il volume per i dati di pgAdmin
+  app_postgres_data:
+    driver: local
+  pgadmin_data:
     driver: local
 
 networks:
-  forvard_default_network: # Definisci la rete condivisa
-    external: true # Indica che è una rete creata esternamente
-    name: forvard_network # Nome della rete creata con 'docker network create'
+  forvard_default_network:
+    external: true
+    name: forvard_network
