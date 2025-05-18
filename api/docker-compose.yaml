@@ -10,7 +10,7 @@ services:
     ports:
       - "${API_PORT:-8000}:8000"
     environment:
-      DATABASE_URL_API: "postgresql://${POSTGRES_APP_USER:-postgres}:${POSTGRES_APP_PASSWORD:-postgres}@${POSTGRES_DB_HOST:-79.72.44.95}:${POSTGRES_DB_PORT_INTERNAL:-5432}/${POSTGRES_APP_DB:-forvard}"
+      DATABASE_URL_API: "postgresql://${POSTGRES_APP_USER:-admin}:${POSTGRES_APP_PASSWORD:-admin}@${POSTGRES_DB_HOST:-79.72.44.95}:${POSTGRES_DB_PORT_INTERNAL:-5432}/${POSTGRES_APP_DB:-forvard}"
       JWT_SECRET_KEY: "${JWT_SECRET_KEY:-forvard_secret_key_change_me_in_production}"
       ACCESS_TOKEN_EXPIRE_MINUTES: "${ACCESS_TOKEN_EXPIRE_MINUTES:-30}"
       CORS_ORIGINS: "${CORS_ORIGINS:-http://localhost,http://localhost:3000}"
