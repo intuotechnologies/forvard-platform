@@ -33,6 +33,11 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-poetry-
     
+    - name: Update Poetry lock file
+      run: |
+        cd api
+        poetry lock --no-update
+    
     - name: Install dependencies
       run: |
         cd api
