@@ -1,0 +1,61 @@
+name: Run Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Install Poetry
+      uses: snok/install-poetry@v1
+      with:
+        version: 1.4.0
+        virtualenvs-create: true
+        virtualenvs-in-project: true
+    
+    - name: Cache Poetry dependencies
+      uses: actions/cache@v3
+      with:
+        path: .venv
+        key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-poetry-
+    
+    - name: Install dependencies
+      run: |
+        cd api
+        poetry install
+    
+    - name: Run tests
+      env:
+        JWT_SECRET_KEY: "test_jwt_secret_key"
+        SESSION_SECRET_KEY: "test_session_secret_key"
+        ACCESS_TOKEN_EXPIRE_MINUTES: "30"
+        CORS_ORIGINS: "http://localhost,http://localhost:3000"
+        LOG_LEVEL: "INFO"
+        LOG_FILE: "./logs/api.log"
+      run: |
+        cd api
+        mkdir -p logs
+        mkdir -p tmp/downloads
+        chmod +x run_tests.sh
+        ./run_tests.sh --coverage
+    
+    - name: Upload test coverage reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-report
+        path: api/htmlcov/
+        retention-days: 7 
