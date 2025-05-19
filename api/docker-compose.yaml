@@ -8,7 +8,7 @@ services:
     container_name: forvard_api_service
     restart: unless-stopped
     ports:
-      - "${API_PORT:-8000}:8000"
+      - "${API_PORT:-8443}:8443"
     environment:
       DATABASE_URL_API: "postgresql://${POSTGRES_APP_USER:-admin}:${POSTGRES_APP_PASSWORD:-admin}@${POSTGRES_DB_HOST:-79.72.44.95}:${POSTGRES_DB_PORT_INTERNAL:-5432}/${POSTGRES_APP_DB:-forvard}"
       JWT_SECRET_KEY: "${JWT_SECRET_KEY:-forvard_secret_key_change_me_in_production}"
@@ -24,7 +24,7 @@ services:
     networks:
       - forvard_default_network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8443/health"]
       interval: 30s
       timeout: 10s
       retries: 3

@@ -10,7 +10,7 @@ import pandas as pd
 # Get database URL from environment variables with fallback
 DATABASE_URL = os.getenv(
     "DATABASE_URL_API", 
-    "postgresql://appuser:appsecretpassword@79.72.44.95:5432/appdb"
+    "postgresql://admin:admin@79.72.44.95:5432/forvard"
 )
 
 # Create SQLAlchemy engine and session

@@ -124,7 +124,7 @@ if __name__ == "__main__":
     import uvicorn
     
     # This will run when file is executed directly (not when imported)
-    PORT = int(os.getenv("API_PORT", "8000"))
+    PORT = int(os.getenv("API_PORT", "8443"))
     
     logger.info(f"Starting API server on port {PORT}")
     
