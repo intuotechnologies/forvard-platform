@@ -66,6 +66,8 @@ class AccessLimitResponse(BaseModel):
     total_available: Dict[str, int]
     used: Dict[str, int]
     remaining: Dict[str, int]
+    role: str
+    unlimited_access: bool = False
 
 
 class DownloadResponse(BaseModel):

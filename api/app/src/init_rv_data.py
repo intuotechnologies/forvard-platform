@@ -8,22 +8,49 @@ import os
 def clean_numeric_value(value_str):
     """
     Pulisce un valore numerico stringa per l'inserimento SQL.
-    Rimuove i separatori delle migliaia '.', sostituisce ',' con '.' per i decimali,
-    e gestisce stringhe vuote come NULL.
+    Gestisce separatori delle migliaia '.', decimali ',', notazione scientifica,
+    e stringhe vuote o placeholder come NULL.
     """
-    if not value_str or value_str.strip() == "":
+    if not value_str or value_str.strip() == "" or value_str.strip().lower() == '########':
         return None # psycopg2 gestirà None come NULL SQL
 
-    # Rimuovi i punti usati come separatori di migliaia
-    cleaned_value = value_str.replace('.', '')
-    # Sostituisci la virgola con il punto per i decimali
-    cleaned_value = cleaned_value.replace(',', '.')
-    
+    original_value_str = value_str # Per messaggi di errore
+    value_str = value_str.strip()
+
+    # 1. Gestione della notazione scientifica (es. "8,77E+10" o "8.77E+10")
+    if 'e' in value_str.lower():
+        # Standardizza il separatore decimale a '.' per la notazione scientifica
+        value_str = value_str.replace(',', '.')
+        try:
+            return float(value_str)
+        except ValueError:
+            print(f"Attenzione: valore scientifico non convertibile '{original_value_str}', verrà inserito come NULL.")
+            return None
+
+    # 2. Gestione di altri numeri
+    # La presenza di una virgola suggerisce che sia un separatore decimale (stile europeo "1.234,56")
+    if ',' in value_str:
+        # Assume che i punti siano separatori di migliaia e la virgola sia decimale
+        value_str = value_str.replace('.', '')  # Rimuove i separatori di migliaia "1.234,56" -> "1234,56"
+        value_str = value_str.replace(',', '.')  # Sostituisce la virgola decimale con il punto "1234,56" -> "1234.56"
+    # Nessuna virgola, ma i punti sono presenti (es. "157.25", "0.000109113", "1.234.567")
+    elif '.' in value_str:
+        num_dots = value_str.count('.')
+        if num_dots > 1:
+            # Punti multipli, probabilmente separatori di migliaia (es. "1.234.567")
+            value_str = value_str.replace('.', '') # "1.234.567" -> "1234567"
+        else: # Esattamente un punto (es. "157.25", "0.000109113")
+              # Assume che sia un separatore decimale.
+              # Nessuna modifica necessaria alla stringa stessa se usa già '.' come decimale.
+              # La logica precedente di .replace('.', '') era il problema qui.
+              pass # La stringa è già nel formato "ddd.ddd" o simile.
+
+    # A questo punto, value_str dovrebbe essere in un formato che float() può comprendere
+    # (es. "1234.56", "1234567", "157.25", "0.000109113")
     try:
-        # Verifica se è un numero valido (anche in notazione scientifica)
-        return float(cleaned_value) # Restituisce come float, psycopg2 lo gestirà
+        return float(value_str)
     except ValueError:
-        print(f"Attenzione: valore non convertibile in numerico '{value_str}', verrà inserito come NULL.")
+        print(f"Attenzione: valore non convertibile in numerico '{original_value_str}' (processato come '{value_str}'), verrà inserito come NULL.")
         return None
 
 def format_date_sql(date_str_ddmmyy):
