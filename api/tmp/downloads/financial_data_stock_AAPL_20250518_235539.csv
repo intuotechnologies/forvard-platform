@@ -1,2 +1,0 @@
-observation_date,symbol,asset_type,volume,trades,open_price,close_price,high_price,low_price,pv,gk,rr5,rv1,rv5,rv5_ss,bv1,bv5,bv5_ss,rsp1,rsn1,rsp5,rsn5,rsp5_ss,rsn5_ss,medrv1,medrv5,medrv5_ss,minrv1,minrv5,minrv5_ss,rk
-2023-01-04,AAPL,equity,92356700.0,478123,132.45,133.72,134.1,131.98,0.0155,0.0151,0.015,0.0142,0.0148,0.0145,0.014,0.0147,0.0143,0.0075,-0.0071,0.0076,-0.0072,0.0073,-0.007,0.0143,0.0146,0.0144,0.0138,0.0141,0.0139,0.015

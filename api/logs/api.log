@@ -2862,3 +2862,217 @@
 2025-05-21 13:28:13.843 | INFO | app.main:add_process_time_header:63 - Request received: GET /health
 2025-05-21 13:28:13.876 | INFO | app.core.database:check_db_connection:45 - Database connection successful
 2025-05-21 13:28:13.892 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-21 18:35:27.313 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-21 18:35:27.314 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-21 18:35:46.046 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-05-21 18:35:46.050 | INFO | app.main:add_process_time_header:78 - Response sent: 401
+2025-05-21 18:35:56.854 | INFO | app.main:add_process_time_header:63 - Request received: GET /
+2025-05-21 18:35:56.863 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-21 18:35:57.443 | INFO | app.main:add_process_time_header:63 - Request received: GET /favicon.ico
+2025-05-21 18:35:57.447 | INFO | app.main:add_process_time_header:78 - Response sent: 404
+2025-05-21 18:35:59.561 | INFO | app.main:add_process_time_header:63 - Request received: GET /docs
+2025-05-21 18:35:59.563 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-21 18:35:59.860 | INFO | app.main:add_process_time_header:63 - Request received: GET /openapi.json
+2025-05-21 18:35:59.895 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-21 18:36:20.446 | INFO | app.main:add_process_time_header:63 - Request received: POST /auth/token
+2025-05-21 18:36:21.075 | INFO | app.routers.auth:login_for_access_token:108 - User logged in: admin@example.com
+2025-05-21 18:36:21.087 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-21 18:36:41.438 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-05-21 18:36:42.165 | INFO | app.routers.financial_data:get_financial_data:161 - Financial data request by admin@example.com
+2025-05-21 18:36:42.198 | INFO | app.routers.financial_data:get_financial_data:312 - Returned 2 financial data points to admin@example.com
+2025-05-21 18:36:42.211 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-21 18:58:22.086 | INFO | app.main:add_process_time_header:63 - Request received: GET /
+2025-05-21 18:58:22.096 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-21 18:58:24.741 | INFO | app.main:add_process_time_header:63 - Request received: GET /docs
+2025-05-21 18:58:24.742 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-21 18:58:25.025 | INFO | app.main:add_process_time_header:63 - Request received: GET /openapi.json
+2025-05-21 18:58:25.031 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-21 18:59:24.895 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-05-21 18:59:24.912 | INFO | app.main:add_process_time_header:78 - Response sent: 401
+2025-05-21 18:59:38.458 | INFO | app.main:add_process_time_header:63 - Request received: POST /auth/token
+2025-05-21 18:59:38.757 | INFO | app.routers.auth:login_for_access_token:108 - User logged in: admin@example.com
+2025-05-21 18:59:38.770 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-21 18:59:42.950 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-05-21 18:59:42.992 | INFO | app.routers.financial_data:get_financial_data:161 - Financial data request by admin@example.com
+2025-05-21 18:59:43.022 | INFO | app.routers.financial_data:get_financial_data:312 - Returned 100 financial data points to admin@example.com
+2025-05-21 18:59:43.035 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-21 19:00:01.061 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-05-21 19:00:01.125 | INFO | app.routers.financial_data:get_financial_data:161 - Financial data request by admin@example.com
+2025-05-21 19:00:01.180 | INFO | app.routers.financial_data:get_financial_data:312 - Returned 100 financial data points to admin@example.com
+2025-05-21 19:00:01.194 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-21 19:00:16.552 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-05-21 19:00:16.606 | INFO | app.routers.financial_data:get_financial_data:161 - Financial data request by admin@example.com
+2025-05-21 19:00:16.645 | INFO | app.routers.financial_data:get_financial_data:312 - Returned 100 financial data points to admin@example.com
+2025-05-21 19:00:16.660 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-21 19:00:55.523 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-05-21 19:00:55.598 | INFO | app.routers.financial_data:get_financial_data:161 - Financial data request by admin@example.com
+2025-05-21 19:00:55.650 | INFO | app.routers.financial_data:get_financial_data:312 - Returned 100 financial data points to admin@example.com
+2025-05-21 19:00:55.664 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-21 19:01:12.726 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-05-21 19:01:12.773 | INFO | app.routers.financial_data:get_financial_data:161 - Financial data request by admin@example.com
+2025-05-21 19:01:12.802 | INFO | app.routers.financial_data:get_financial_data:312 - Returned 100 financial data points to admin@example.com
+2025-05-21 19:01:12.815 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-21 19:01:26.870 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-05-21 19:01:26.905 | INFO | app.routers.financial_data:get_financial_data:161 - Financial data request by admin@example.com
+2025-05-21 19:01:26.944 | INFO | app.routers.financial_data:get_financial_data:312 - Returned 100 financial data points to admin@example.com
+2025-05-21 19:01:26.955 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-21 19:01:44.529 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-05-21 19:01:44.569 | INFO | app.routers.financial_data:get_financial_data:161 - Financial data request by admin@example.com
+2025-05-21 19:01:44.610 | INFO | app.routers.financial_data:get_financial_data:312 - Returned 100 financial data points to admin@example.com
+2025-05-21 19:01:44.624 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-21 19:02:30.610 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-05-21 19:02:30.732 | INFO | app.routers.financial_data:get_financial_data:161 - Financial data request by admin@example.com
+2025-05-21 19:02:30.769 | INFO | app.routers.financial_data:get_financial_data:312 - Returned 100 financial data points to admin@example.com
+2025-05-21 19:02:30.783 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-21 19:02:48.883 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-05-21 19:02:48.939 | INFO | app.routers.financial_data:get_financial_data:161 - Financial data request by admin@example.com
+2025-05-21 19:02:48.990 | INFO | app.routers.financial_data:get_financial_data:312 - Returned 100 financial data points to admin@example.com
+2025-05-21 19:02:49.003 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-21 19:17:06.994 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-05-21 19:17:07.075 | INFO | app.routers.financial_data:get_financial_data:161 - Financial data request by admin@example.com
+2025-05-21 19:17:07.111 | INFO | app.routers.financial_data:get_financial_data:312 - Returned 100 financial data points to admin@example.com
+2025-05-21 19:17:07.124 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-21 19:17:56.912 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-05-21 19:17:56.979 | INFO | app.routers.financial_data:get_financial_data:161 - Financial data request by admin@example.com
+2025-05-21 19:17:57.015 | INFO | app.routers.financial_data:get_financial_data:312 - Returned 100 financial data points to admin@example.com
+2025-05-21 19:17:57.028 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-21 19:19:44.735 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-05-21 19:19:44.810 | INFO | app.routers.financial_data:get_financial_data:161 - Financial data request by admin@example.com
+2025-05-21 19:19:44.848 | INFO | app.routers.financial_data:get_financial_data:312 - Returned 100 financial data points to admin@example.com
+2025-05-21 19:19:44.859 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-21 19:26:50.291 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-05-21 19:26:50.305 | INFO | app.main:add_process_time_header:78 - Response sent: 401
+2025-05-21 19:30:11.468 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-05-21 19:30:11.504 | INFO | app.main:add_process_time_header:78 - Response sent: 401
+2025-05-21 19:33:17.678 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-05-21 19:33:17.691 | INFO | app.main:add_process_time_header:78 - Response sent: 401
+2025-05-21 19:33:31.819 | INFO | app.main:add_process_time_header:63 - Request received: POST /auth/token
+2025-05-21 19:33:32.139 | WARNING | app.routers.auth:login_for_access_token:98 - Failed login attempt for: admin@example.com
+2025-05-21 19:33:32.150 | INFO | app.main:add_process_time_header:78 - Response sent: 401
+2025-05-21 19:33:46.330 | INFO | app.main:add_process_time_header:63 - Request received: POST /auth/token
+2025-05-21 19:33:46.620 | INFO | app.routers.auth:login_for_access_token:108 - User logged in: admin@example.com
+2025-05-21 19:33:46.632 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-21 19:33:50.764 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-05-21 19:33:50.798 | INFO | app.routers.financial_data:get_financial_data:161 - Financial data request by admin@example.com
+2025-05-21 19:33:50.835 | INFO | app.routers.financial_data:get_financial_data:312 - Returned 100 financial data points to admin@example.com
+2025-05-21 19:33:50.847 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-29 15:39:36.271 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-05-29 15:39:36.272 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-05-29 15:39:41.931 | INFO | app.main:add_process_time_header:63 - Request received: GET /
+2025-05-29 15:39:41.934 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-29 15:39:43.050 | INFO | app.main:add_process_time_header:63 - Request received: GET /favicon.ico
+2025-05-29 15:39:43.055 | INFO | app.main:add_process_time_header:78 - Response sent: 404
+2025-05-29 15:39:46.107 | INFO | app.main:add_process_time_header:63 - Request received: GET /docs
+2025-05-29 15:39:46.108 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-29 15:39:46.405 | INFO | app.main:add_process_time_header:63 - Request received: GET /openapi.json
+2025-05-29 15:39:46.448 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-29 15:39:51.812 | INFO | app.main:add_process_time_header:63 - Request received: GET /health
+2025-05-29 15:39:52.162 | INFO | app.core.database:check_db_connection:45 - Database connection successful
+2025-05-29 15:39:52.176 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-29 15:41:16.261 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-05-29 15:41:16.264 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data/limits
+2025-05-29 15:41:16.276 | INFO | app.main:add_process_time_header:78 - Response sent: 401
+2025-05-29 15:41:16.277 | INFO | app.main:add_process_time_header:78 - Response sent: 401
+2025-05-29 15:41:16.332 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data/limits
+2025-05-29 15:41:16.334 | INFO | app.main:add_process_time_header:78 - Response sent: 401
+2025-05-29 15:41:16.336 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-05-29 15:41:16.339 | INFO | app.main:add_process_time_header:78 - Response sent: 401
+2025-05-29 15:41:31.575 | INFO | app.main:add_process_time_header:63 - Request received: POST /auth/token
+2025-05-29 15:41:32.025 | INFO | app.routers.auth:login_for_access_token:108 - User logged in: admin@example.com
+2025-05-29 15:41:32.040 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-29 15:41:32.112 | INFO | app.main:add_process_time_header:63 - Request received: GET /auth/me
+2025-05-29 15:41:32.380 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-29 15:41:32.491 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data/limits
+2025-05-29 15:41:32.535 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-05-29 15:41:32.675 | INFO | app.routers.financial_data:get_financial_data:161 - Financial data request by admin@example.com
+2025-05-29 15:41:32.707 | INFO | app.routers.financial_data:get_financial_data:312 - Returned 5 financial data points to admin@example.com
+2025-05-29 15:41:32.709 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-29 15:41:32.727 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-29 15:41:32.805 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data/limits
+2025-05-29 15:41:32.844 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-05-29 15:41:32.886 | INFO | app.routers.financial_data:get_financial_data:161 - Financial data request by admin@example.com
+2025-05-29 15:41:32.916 | INFO | app.routers.financial_data:get_financial_data:312 - Returned 5 financial data points to admin@example.com
+2025-05-29 15:41:32.917 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-29 15:41:32.931 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-29 15:41:32.969 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-05-29 15:41:33.008 | INFO | app.routers.financial_data:get_financial_data:161 - Financial data request by admin@example.com
+2025-05-29 15:41:33.036 | INFO | app.routers.financial_data:get_financial_data:312 - Returned 5 financial data points to admin@example.com
+2025-05-29 15:41:33.050 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-29 15:41:33.084 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-05-29 15:41:33.126 | INFO | app.routers.financial_data:get_financial_data:161 - Financial data request by admin@example.com
+2025-05-29 15:41:33.155 | INFO | app.routers.financial_data:get_financial_data:312 - Returned 5 financial data points to admin@example.com
+2025-05-29 15:41:33.170 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-29 15:41:47.684 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-05-29 15:41:47.756 | INFO | app.routers.financial_data:get_financial_data:161 - Financial data request by admin@example.com
+2025-05-29 15:41:47.789 | INFO | app.routers.financial_data:get_financial_data:312 - Returned 100 financial data points to admin@example.com
+2025-05-29 15:41:47.808 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-29 15:41:47.883 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-05-29 15:41:47.931 | INFO | app.routers.financial_data:get_financial_data:161 - Financial data request by admin@example.com
+2025-05-29 15:41:47.983 | INFO | app.routers.financial_data:get_financial_data:312 - Returned 100 financial data points to admin@example.com
+2025-05-29 15:41:48.000 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-29 15:41:52.823 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-05-29 15:41:52.860 | INFO | app.routers.financial_data:get_financial_data:161 - Financial data request by admin@example.com
+2025-05-29 15:41:52.885 | INFO | app.routers.financial_data:get_financial_data:312 - Returned 0 financial data points to admin@example.com
+2025-05-29 15:41:52.897 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-29 15:41:52.957 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-05-29 15:41:53.004 | INFO | app.routers.financial_data:get_financial_data:161 - Financial data request by admin@example.com
+2025-05-29 15:41:53.036 | INFO | app.routers.financial_data:get_financial_data:312 - Returned 100 financial data points to admin@example.com
+2025-05-29 15:41:53.051 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-29 15:42:30.975 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data/download
+2025-05-29 15:42:31.045 | INFO | app.routers.financial_data:download_financial_data:416 - Download request by admin@example.com
+2025-05-29 15:42:32.368 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-29 15:42:32.369 | INFO | app.routers.financial_data:cleanup_old_downloads:56 - Removed old download file: financial_data_20250518_235539.csv
+2025-05-29 15:42:32.370 | INFO | app.routers.financial_data:cleanup_old_downloads:56 - Removed old download file: financial_data_stock_AAPL_20250518_235539.csv
+2025-05-29 15:42:32.370 | INFO | app.routers.financial_data:cleanup_old_downloads:56 - Removed old download file: financial_data_stock_20250518_235543.csv
+2025-05-29 15:42:32.412 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data/files/financial_data_20250529_154231.csv
+2025-05-29 15:42:32.459 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-29 15:43:05.095 | INFO | app.main:add_process_time_header:63 - Request received: POST /auth/token
+2025-05-29 15:43:05.514 | INFO | app.routers.auth:login_for_access_token:108 - User logged in: senator@example.com
+2025-05-29 15:43:05.528 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-29 15:43:05.625 | INFO | app.main:add_process_time_header:63 - Request received: GET /auth/me
+2025-05-29 15:43:05.767 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-29 15:43:05.903 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-05-29 15:43:06.000 | INFO | app.routers.financial_data:get_financial_data:161 - Financial data request by senator@example.com
+2025-05-29 15:43:06.049 | INFO | app.routers.financial_data:get_financial_data:312 - Returned 8 financial data points to senator@example.com
+2025-05-29 15:43:06.063 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-29 15:43:06.116 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-05-29 15:43:06.167 | INFO | app.routers.financial_data:get_financial_data:161 - Financial data request by senator@example.com
+2025-05-29 15:43:06.221 | INFO | app.routers.financial_data:get_financial_data:312 - Returned 8 financial data points to senator@example.com
+2025-05-29 15:43:06.237 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-29 15:43:10.334 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-05-29 15:43:10.385 | INFO | app.routers.financial_data:get_financial_data:161 - Financial data request by senator@example.com
+2025-05-29 15:43:10.425 | INFO | app.routers.financial_data:get_financial_data:312 - Returned 8 financial data points to senator@example.com
+2025-05-29 15:43:10.439 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-29 15:43:10.496 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-05-29 15:43:10.543 | INFO | app.routers.financial_data:get_financial_data:161 - Financial data request by senator@example.com
+2025-05-29 15:43:10.589 | INFO | app.routers.financial_data:get_financial_data:312 - Returned 8 financial data points to senator@example.com
+2025-05-29 15:43:10.605 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-29 15:43:29.881 | INFO | app.main:add_process_time_header:63 - Request received: POST /auth/token
+2025-05-29 15:43:30.217 | INFO | app.routers.auth:login_for_access_token:108 - User logged in: base@example.com
+2025-05-29 15:43:30.230 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-29 15:43:30.386 | INFO | app.main:add_process_time_header:63 - Request received: GET /auth/me
+2025-05-29 15:43:30.505 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-29 15:43:30.562 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-05-29 15:43:30.605 | INFO | app.routers.financial_data:get_financial_data:161 - Financial data request by base@example.com
+2025-05-29 15:43:30.647 | INFO | app.routers.financial_data:get_financial_data:312 - Returned 4 financial data points to base@example.com
+2025-05-29 15:43:30.659 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-29 15:43:30.710 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-05-29 15:43:30.755 | INFO | app.routers.financial_data:get_financial_data:161 - Financial data request by base@example.com
+2025-05-29 15:43:30.799 | INFO | app.routers.financial_data:get_financial_data:312 - Returned 4 financial data points to base@example.com
+2025-05-29 15:43:30.813 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-29 15:43:33.303 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-05-29 15:43:33.343 | INFO | app.routers.financial_data:get_financial_data:161 - Financial data request by base@example.com
+2025-05-29 15:43:33.383 | INFO | app.routers.financial_data:get_financial_data:312 - Returned 4 financial data points to base@example.com
+2025-05-29 15:43:33.395 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-29 15:43:33.435 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-05-29 15:43:33.481 | INFO | app.routers.financial_data:get_financial_data:161 - Financial data request by base@example.com
+2025-05-29 15:43:33.525 | INFO | app.routers.financial_data:get_financial_data:312 - Returned 4 financial data points to base@example.com
+2025-05-29 15:43:33.540 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-29 15:43:36.235 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-05-29 15:43:36.278 | INFO | app.routers.financial_data:get_financial_data:161 - Financial data request by base@example.com
+2025-05-29 15:43:36.319 | INFO | app.routers.financial_data:get_financial_data:312 - Returned 4 financial data points to base@example.com
+2025-05-29 15:43:36.337 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-05-29 15:43:36.418 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-05-29 15:43:36.466 | INFO | app.routers.financial_data:get_financial_data:161 - Financial data request by base@example.com
+2025-05-29 15:43:36.512 | INFO | app.routers.financial_data:get_financial_data:312 - Returned 4 financial data points to base@example.com
+2025-05-29 15:43:36.530 | INFO | app.main:add_process_time_header:78 - Response sent: 200

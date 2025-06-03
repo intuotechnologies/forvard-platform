@@ -182,33 +182,39 @@ async def get_financial_data(
         symbol_list
     )
     
-    # Build query
-    query = """
-        SELECT 
-            observation_date, symbol, asset_type, 
-            volume, trades, open_price, close_price, 
-            high_price, low_price, rv5
-    """
+    # Define core fields that are always selected
+    core_fields = [
+        "observation_date", "symbol", "asset_type", 
+        "volume", "trades", "open_price", "close_price", 
+        "high_price", "low_price"
+    ]
+
+    # Define all available optional (volatility) fields
+    all_optional_fields = {
+        "pv", "gk", "rr5", "rv1", "rv5", "rv5_ss", "bv1", "bv5", "bv5_ss", 
+        "rsp1", "rsn1", "rsp5", "rsn5", "rsp5_ss", "rsn5_ss", "medrv1", 
+        "medrv5", "medrv5_ss", "minrv1", "minrv5", "minrv5_ss", "rk"
+    }
+
+    # Start with core fields plus rv5 as a default optional field
+    fields_to_select = core_fields + ["rv5"]
     
-    # Add requested fields if specified
-    if fields:
-        # Validate fields to prevent SQL injection
-        valid_fields = {
-            "pv", "gk", "rr5", "rv1", "rv5", "rv5_ss", "bv1", "bv5", "bv5_ss", 
-            "rsp1", "rsn1", "rsp5", "rsn5", "rsp5_ss", "rsn5_ss", "medrv1", 
-            "medrv5", "medrv5_ss", "minrv1", "minrv5", "minrv5_ss", "rk"
-        }
-        
-        # Filter and validate requested fields
-        valid_requested_fields = [f for f in fields if f in valid_fields]
-        
-        if valid_requested_fields:
-            # Add fields to query
-            field_str = ", ".join(valid_requested_fields)
-            query = query.replace("rv5", f"rv5, {field_str}")
+    # Add other requested optional fields if specified
+    if fields: # fields is the Query parameter from the endpoint
+        # User wants specific optional fields
+        for field_name in fields:
+            if field_name in all_optional_fields:
+                if field_name not in fields_to_select: # Add if not already present
+                    fields_to_select.append(field_name)
+            elif field_name == "all": # Special keyword to request all optional fields
+                for opt_field in all_optional_fields:
+                    if opt_field not in fields_to_select:
+                        fields_to_select.append(opt_field)
+                break # "all" overrides other specific field requests in this logic
     
-    # Complete query
-    query += " FROM realized_volatility_data WHERE 1=1"
+    # Construct the SELECT part of the query
+    select_clause = ", ".join(fields_to_select)
+    query = f"SELECT {select_clause} FROM realized_volatility_data WHERE 1=1"
     
     # Build where clause and params
     params = {}
@@ -235,11 +241,38 @@ async def get_financial_data(
         params["end_date"] = end_date
     
     # Get total count for pagination
-    count_query = query.replace("SELECT \n            observation_date, symbol, asset_type, \n            volume, trades, open_price, close_price, \n            high_price, low_price, rv5", "SELECT COUNT(*)")
+    # The count_query should not depend on the selected fields for correctness, only on WHERE clauses
+    count_select_clause = "SELECT COUNT(*)"
+    # Rebuild count_query from the ground up to avoid issues with field list in main query
+    count_query_parts = ["FROM realized_volatility_data WHERE 1=1"]
+
+    params_for_count = {}
+    
+    # Re-apply filters for count query (must be consistent with main query)
+    if symbol_list:
+        symbol_placeholders_count = ', '.join(f':symbol_count{i}' for i in range(len(symbol_list)))
+        count_query_parts.append(f" AND symbol IN ({symbol_placeholders_count})")
+        for i, sym in enumerate(symbol_list):
+            params_for_count[f'symbol_count{i}'] = sym
+    
+    if asset_type:
+        normalized_type_count = ASSET_TYPE_MAPPING.get(asset_type.lower(), asset_type)
+        count_query_parts.append(" AND asset_type = :asset_type_count")
+        params_for_count["asset_type_count"] = normalized_type_count
+    
+    if start_date:
+        count_query_parts.append(" AND observation_date >= :start_date_count")
+        params_for_count["start_date_count"] = start_date
+    
+    if end_date:
+        count_query_parts.append(" AND observation_date <= :end_date_count")
+        params_for_count["end_date_count"] = end_date
+
+    count_query = f"{count_select_clause} {' '.join(count_query_parts)}"
     
     total_count = 0
     try:
-        total_count_result = db.execute(text(count_query), params).scalar()
+        total_count_result = db.execute(text(count_query), params_for_count).scalar()
         total_count = total_count_result or 0
     except SQLAlchemyError as e:
         logger.error(f"Error counting financial data: {e}")
