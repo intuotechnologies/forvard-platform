@@ -14,11 +14,11 @@ def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 def create_users_and_permissions(
-    db_host="79.72.44.95",
+    db_host="volare.unime.it",
     db_port="5432",
-    db_name="appdb",
-    db_user="appuser",
-    db_password="appsecretpassword"
+    db_name="forvarddb",
+    db_user="forvarduser",
+    db_password="WsUpwXjEA7HHidmL8epF"
 ):
     """
     Crea utenti e permessi base nel database
@@ -118,11 +118,11 @@ def create_users_and_permissions(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Inizializza utenti e permessi nel database')
-    parser.add_argument('--host', default='79.72.44.95', help='Host del database')
+    parser.add_argument('--host', default='volare.unime.it', help='Host del database')
     parser.add_argument('--port', default='5432', help='Porta del database')
-    parser.add_argument('--dbname', default='appdb', help='Nome del database')
-    parser.add_argument('--user', default='appuser', help='Utente del database')
-    parser.add_argument('--password', default='appsecretpassword', help='Password del database')
+    parser.add_argument('--dbname', default='forvarddb', help='Nome del database')
+    parser.add_argument('--user', default='forvarduser', help='Utente del database')
+    parser.add_argument('--password', default='WsUpwXjEA7HHidmL8epF', help='Password del database')
     
     args = parser.parse_args()
     
