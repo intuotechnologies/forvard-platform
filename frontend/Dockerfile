@@ -1,39 +1,55 @@
-# 1. Base image for building the application
-FROM node:20-alpine AS builder
+# Stage 1: Build the application
+FROM node:18-alpine AS builder
 
-# 2. Set working directory
+# Set working directory
 WORKDIR /app
 
-# 3. Copy package.json and package-lock.json
-COPY package.json package-lock.json ./
+# Copy package.json and package-lock.json from the frontend directory
+COPY frontend/package.json frontend/package-lock.json ./
 
-# 4. Install dependencies
-# Use --ci for reproducible builds, ensuring it uses package-lock.json
+# Install dependencies
 RUN npm ci
 
-# 5. Copy the rest of the application source code
-COPY . .
+# Copy the rest of the application source code from the frontend directory
+COPY frontend/ .
 
-# 6. Build the Next.js application
-# This command typically comes from your package.json scripts
+# Build the Next.js application.
+# No build-time env vars needed for the proxy anymore.
 RUN npm run build
 
-# 7. Production image: Use a lean base image
-FROM node:20-alpine AS runner
+# Stage 2: Production image
+FROM node:18-alpine
 
+# Set working directory
 WORKDIR /app
 
-# Copy environment configuration - Next.js doesn't bundle .env files by default
-# You might need to handle .env files or runtime environment variables differently in your deployment
+# Create a non-root user for security
+RUN addgroup -S nextjs && adduser -S nextjs -G nextjs
+
+# Copy dependency files from the builder stage
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/package-lock.json ./package-lock.json
+
+# Install only production dependencies
+RUN npm ci --omit=dev
+
+# Copy built assets from the builder stage
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/package.json ./
-# If your Next.js app needs node_modules in production for some reason (usually not for standalone output)
-# COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/next.config.ts ./next.config.ts
 
-# 8. Expose the port the app runs on
+# Change ownership of all files to the non-root user
+RUN chown -R nextjs:nextjs /app
+
+# Switch to the non-root user
+USER nextjs
+
+# Set the runtime environment variable for the API URL
+# This is now a server-side only variable, read at runtime by the API proxy.
+ENV API_URL="http://forvard_api:8443"
+
+# Expose the port the app runs on
 EXPOSE 3000
 
-# 9. Command to run the application
-# This command typically comes from your package.json scripts for starting in production mode
+# The command to start the application
 CMD ["npm", "start"] 

@@ -3076,3 +3076,17 @@
 2025-05-29 15:43:36.466 | INFO | app.routers.financial_data:get_financial_data:161 - Financial data request by base@example.com
 2025-05-29 15:43:36.512 | INFO | app.routers.financial_data:get_financial_data:312 - Returned 4 financial data points to base@example.com
 2025-05-29 15:43:36.530 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-07-09 14:33:22.608 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-07-09 14:33:22.609 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-07-09 14:33:34.458 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-07-09 14:33:34.459 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-07-09 14:33:54.873 | INFO | app.main:add_process_time_header:63 - Request received: GET /auth/token
+2025-07-09 14:33:54.879 | INFO | app.main:add_process_time_header:78 - Response sent: 405
+2025-07-09 14:33:55.130 | INFO | app.main:add_process_time_header:63 - Request received: GET /favicon.ico
+2025-07-09 14:33:55.132 | INFO | app.main:add_process_time_header:78 - Response sent: 404
+2025-07-09 14:33:59.657 | INFO | app.main:add_process_time_header:63 - Request received: GET /
+2025-07-09 14:33:59.657 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-07-09 14:34:06.867 | INFO | app.main:add_process_time_header:63 - Request received: GET /docs
+2025-07-09 14:34:06.871 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-07-09 14:34:07.402 | INFO | app.main:add_process_time_header:63 - Request received: GET /openapi.json
+2025-07-09 14:34:07.488 | INFO | app.main:add_process_time_header:78 - Response sent: 200
