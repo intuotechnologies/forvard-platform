@@ -19,7 +19,10 @@ from ..models.financial_data import (
     FinancialDataPoint, 
     FinancialDataResponse, 
     AccessLimitResponse,
-    DownloadResponse
+    DownloadResponse,
+    CovarianceDataPoint,
+    CovarianceDataResponse,
+    CovarianceDataRequest
 )
 from ..core.exceptions import AccessLimitExceeded, ResourceNotFound
 
@@ -94,6 +97,10 @@ def apply_access_limits(
     # Admin users have no limits
     if user.role_name == "admin":
         return None  # No limit
+    
+    # If no access limits defined, use new permission system (no numeric limits)
+    if not access_limits:
+        return None  # No numeric limit - access control handled by asset_permissions
     
     # Get counts of unique assets by type for this request
     asset_count = count_unique_assets(db, str(user.user_id), asset_type)
@@ -193,7 +200,8 @@ async def get_financial_data(
     all_optional_fields = {
         "pv", "gk", "rr5", "rv1", "rv5", "rv5_ss", "bv1", "bv5", "bv5_ss", 
         "rsp1", "rsn1", "rsp5", "rsn5", "rsp5_ss", "rsn5_ss", "medrv1", 
-        "medrv5", "medrv5_ss", "minrv1", "minrv5", "minrv5_ss", "rk"
+        "medrv5", "medrv5_ss", "minrv1", "minrv5", "minrv5_ss", "rk",
+        "rq1", "rq5", "rq5_ss"  # Added new Realized Quarticity fields
     }
 
     # Start with core fields plus rv5 as a default optional field
@@ -580,4 +588,285 @@ async def get_download_file(filename: str, current_user: UserInDB = Depends(get_
         path=file_path,
         filename=filename,
         media_type="text/csv"
-    ) 
+    )
+
+
+# ==========================
+# COVARIANCE DATA ENDPOINTS
+# ==========================
+
+@router.get("/covariance", response_model=CovarianceDataResponse)
+async def get_covariance_data(
+    db: Session = Depends(get_db),
+    current_user: UserInDB = Depends(get_current_user),
+    access_limits: Dict[str, int] = Depends(get_user_access_limits),
+    asset1_symbol: Optional[str] = None,
+    asset2_symbol: Optional[str] = None,
+    symbols: Optional[List[str]] = Query(None),
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    page: int = 1,
+    limit: int = 100,
+    fields: Optional[List[str]] = Query(None)
+):
+    """
+    Get covariance data with filtering and pagination
+    """
+    logger.info(
+        f"Covariance data request by {current_user.email}",
+        user_id=str(current_user.user_id),
+        role=current_user.role_name,
+        filters={"asset1_symbol": asset1_symbol, "asset2_symbol": asset2_symbol, 
+                "symbols": symbols, "start_date": start_date, "end_date": end_date}
+    )
+    
+    # Define core fields that are always selected
+    core_fields = [
+        "observation_date", "asset1_symbol", "asset2_symbol"
+    ]
+
+    # Define all available optional (covariance) fields
+    all_optional_fields = {
+        "rcov", "rbpcov", "rscov_p", "rscov_n", "rscov_mp", "rscov_mn"
+    }
+
+    # Start with core fields plus rcov as a default optional field
+    fields_to_select = core_fields + ["rcov"]
+    
+    # Add other requested optional fields if specified
+    if fields:
+        for field_name in fields:
+            if field_name in all_optional_fields:
+                if field_name not in fields_to_select:
+                    fields_to_select.append(field_name)
+            elif field_name == "all":
+                for opt_field in all_optional_fields:
+                    if opt_field not in fields_to_select:
+                        fields_to_select.append(opt_field)
+                break
+    
+    # Construct the SELECT part of the query
+    select_clause = ", ".join(fields_to_select)
+    query = f"SELECT {select_clause} FROM realized_covariance_data WHERE 1=1"
+    
+    # Build where clause and params
+    params = {}
+    
+    if asset1_symbol:
+        query += " AND asset1_symbol = :asset1_symbol"
+        params["asset1_symbol"] = asset1_symbol
+    
+    if asset2_symbol:
+        query += " AND asset2_symbol = :asset2_symbol"
+        params["asset2_symbol"] = asset2_symbol
+    
+    if symbols:
+        # Filter for pairs where both symbols are in the provided list
+        symbol_placeholders = ', '.join(f':symbol{i}' for i in range(len(symbols)))
+        query += f" AND (asset1_symbol IN ({symbol_placeholders}) OR asset2_symbol IN ({symbol_placeholders}))"
+        for i, sym in enumerate(symbols):
+            params[f'symbol{i}'] = sym
+    
+    if start_date:
+        query += " AND observation_date >= :start_date"
+        params["start_date"] = start_date
+    
+    if end_date:
+        query += " AND observation_date <= :end_date"
+        params["end_date"] = end_date
+    
+    # Get total count for pagination
+    count_query = "SELECT COUNT(*) FROM realized_covariance_data WHERE 1=1"
+    count_params = {}
+    
+    if asset1_symbol:
+        count_query += " AND asset1_symbol = :asset1_symbol"
+        count_params["asset1_symbol"] = asset1_symbol
+    
+    if asset2_symbol:
+        count_query += " AND asset2_symbol = :asset2_symbol"
+        count_params["asset2_symbol"] = asset2_symbol
+    
+    if symbols:
+        symbol_placeholders = ', '.join(f':symbol{i}' for i in range(len(symbols)))
+        count_query += f" AND (asset1_symbol IN ({symbol_placeholders}) OR asset2_symbol IN ({symbol_placeholders}))"
+        for i, sym in enumerate(symbols):
+            count_params[f'symbol{i}'] = sym
+    
+    if start_date:
+        count_query += " AND observation_date >= :start_date"
+        count_params["start_date"] = start_date
+    
+    if end_date:
+        count_query += " AND observation_date <= :end_date"
+        count_params["end_date"] = end_date
+    
+    try:
+        # Get total count
+        total_result = db.execute(text(count_query), count_params).fetchone()
+        total = total_result[0] if total_result else 0
+        
+        # Add ordering and pagination
+        query += " ORDER BY observation_date DESC, asset1_symbol, asset2_symbol"
+        
+        offset = (page - 1) * limit
+        query += f" LIMIT {limit} OFFSET {offset}"
+        
+        # Execute main query
+        result = db.execute(text(query), params)
+        columns = result.keys()
+        
+        # Convert to list of dicts
+        data = []
+        for row in result:
+            row_dict = dict(zip(columns, row))
+            data.append(CovarianceDataPoint(**row_dict))
+        
+        # Calculate pagination info
+        has_more = offset + len(data) < total
+        
+        logger.info(f"Returning {len(data)} covariance records for {current_user.email}")
+        
+        return CovarianceDataResponse(
+            data=data,
+            total=total,
+            page=page,
+            limit=limit,
+            has_more=has_more
+        )
+        
+    except SQLAlchemyError as e:
+        logger.error(f"Database error in covariance query: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Database query error"
+        )
+
+
+@router.get("/covariance/download", response_model=DownloadResponse)
+async def download_covariance_data(
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+    current_user: UserInDB = Depends(get_current_user),
+    access_limits: Dict[str, int] = Depends(get_user_access_limits),
+    asset1_symbol: Optional[str] = None,
+    asset2_symbol: Optional[str] = None,
+    symbols: Optional[List[str]] = Query(None),
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    fields: Optional[List[str]] = Query(None)
+):
+    """
+    Download covariance data as CSV
+    """
+    logger.info(
+        f"Covariance data download request by {current_user.email}",
+        user_id=str(current_user.user_id),
+        role=current_user.role_name
+    )
+    
+    # Define core fields that are always selected
+    core_fields = [
+        "observation_date", "asset1_symbol", "asset2_symbol"
+    ]
+
+    # Define all available optional (covariance) fields
+    all_optional_fields = [
+        "rcov", "rbpcov", "rscov_p", "rscov_n", "rscov_mp", "rscov_mn"
+    ]
+
+    # Start with core fields
+    fields_to_select = core_fields[:]
+    
+    # Add requested optional fields
+    if fields:
+        for field_name in fields:
+            if field_name in all_optional_fields:
+                if field_name not in fields_to_select:
+                    fields_to_select.append(field_name)
+            elif field_name == "all":
+                for opt_field in all_optional_fields:
+                    if opt_field not in fields_to_select:
+                        fields_to_select.append(opt_field)
+                break
+    else:
+        # If no specific fields requested, include all optional fields
+        fields_to_select.extend(all_optional_fields)
+    
+    # Construct the SELECT part of the query
+    select_clause = ", ".join(fields_to_select)
+    query = f"SELECT {select_clause} FROM realized_covariance_data WHERE 1=1"
+    
+    # Build where clause and params
+    params = {}
+    
+    if asset1_symbol:
+        query += " AND asset1_symbol = :asset1_symbol"
+        params["asset1_symbol"] = asset1_symbol
+    
+    if asset2_symbol:
+        query += " AND asset2_symbol = :asset2_symbol"
+        params["asset2_symbol"] = asset2_symbol
+    
+    if symbols:
+        symbol_placeholders = ', '.join(f':symbol{i}' for i in range(len(symbols)))
+        query += f" AND (asset1_symbol IN ({symbol_placeholders}) OR asset2_symbol IN ({symbol_placeholders}))"
+        for i, sym in enumerate(symbols):
+            params[f'symbol{i}'] = sym
+    
+    if start_date:
+        query += " AND observation_date >= :start_date"
+        params["start_date"] = start_date
+    
+    if end_date:
+        query += " AND observation_date <= :end_date"
+        params["end_date"] = end_date
+    
+    # Add ordering
+    query += " ORDER BY observation_date DESC, asset1_symbol, asset2_symbol"
+    
+    try:
+        # Convert query to pandas dataframe
+        df = query_to_dataframe(db, query, params)
+        
+        if df.empty:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="No covariance data found matching the criteria"
+            )
+        
+        # Create filename
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        asset1_str = f"_{asset1_symbol}" if asset1_symbol else ""
+        asset2_str = f"_{asset2_symbol}" if asset2_symbol else ""
+        if symbols and len(symbols) <= 3:
+            symbols_str = f"_{'-'.join(symbols)}"
+        elif symbols:
+            symbols_str = f"_{len(symbols)}_symbols"
+        else:
+            symbols_str = ""
+            
+        filename = f"covariance_data{asset1_str}{asset2_str}{symbols_str}_{timestamp}.csv"
+        file_path = os.path.join(TEMP_DIR, filename)
+        
+        # Save to CSV
+        df.to_csv(file_path, index=False)
+        
+        # Create download URL
+        base_url = f"/financial-data/files/{filename}"
+        
+        # Calculate expiration time (1 hour from now)
+        expires_at = (datetime.now() + timedelta(hours=1)).strftime("%Y-%m-%d %H:%M:%S")
+        
+        return DownloadResponse(
+            download_url=base_url,
+            file_name=filename,
+            expires_at=expires_at
+        )
+        
+    except SQLAlchemyError as e:
+        logger.error(f"Database error generating covariance download: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error generating covariance download"
+        ) 
