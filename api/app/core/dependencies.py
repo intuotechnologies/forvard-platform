@@ -85,6 +85,8 @@ async def get_user_access_limits(
         results = db.execute(query, {"role_id": current_user.role_id}).fetchall()
         return {row.asset_category: row.max_items for row in results}
     except Exception as e:
+        # Rollback the transaction to prevent "aborted transaction" errors
+        db.rollback()
         # If table doesn't exist or query fails, assume new permission system
         logger.info(f"asset_access_limits table not found, using new permission system: {e}")
         return {}
@@ -121,6 +123,8 @@ async def get_user_accessible_assets(
         return accessible_assets
         
     except Exception as e:
+        # Rollback the transaction to prevent "aborted transaction" errors
+        db.rollback()
         logger.error(f"Error getting user accessible assets: {e}")
         # For admin users, return empty dict to allow all access
         if current_user.role_name == "admin":

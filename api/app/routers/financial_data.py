@@ -67,23 +67,29 @@ def count_unique_assets(
     asset_type: Optional[str] = None
 ) -> Dict[str, int]:
     """Count unique assets accessed by user by type"""
-    query = """
-        SELECT asset_type, COUNT(DISTINCT symbol) as count 
-        FROM realized_volatility_data 
-        WHERE 1=1
-    """
-    params = {}
-    
-    if asset_type:
-        # Apply asset type mapping
-        normalized_type = ASSET_TYPE_MAPPING.get(asset_type.lower(), asset_type)
-        query += " AND asset_type = :asset_type"
-        params["asset_type"] = normalized_type
-    
-    query += " GROUP BY asset_type"
-    
-    result = db.execute(text(query), params).fetchall()
-    return {row.asset_type: row.count for row in result}
+    try:
+        query = """
+            SELECT asset_type, COUNT(DISTINCT symbol) as count 
+            FROM realized_volatility_data 
+            WHERE 1=1
+        """
+        params = {}
+        
+        if asset_type:
+            # Apply asset type mapping
+            normalized_type = ASSET_TYPE_MAPPING.get(asset_type.lower(), asset_type)
+            query += " AND asset_type = :asset_type"
+            params["asset_type"] = normalized_type
+        
+        query += " GROUP BY asset_type"
+        
+        result = db.execute(text(query), params).fetchall()
+        return {row.asset_type: row.count for row in result}
+    except SQLAlchemyError as e:
+        # Rollback the transaction to prevent "aborted transaction" errors
+        db.rollback()
+        logger.error(f"Database error in count_unique_assets: {e}")
+        return {}
 
 
 def apply_access_limits(
@@ -283,6 +289,8 @@ async def get_financial_data(
         total_count_result = db.execute(text(count_query), params_for_count).scalar()
         total_count = total_count_result or 0
     except SQLAlchemyError as e:
+        # Rollback the transaction to prevent "aborted transaction" errors
+        db.rollback()
         logger.error(f"Error counting financial data: {e}")
         total_count = 0
     
@@ -324,6 +332,8 @@ async def get_financial_data(
         return response
     
     except SQLAlchemyError as e:
+        # Rollback the transaction to prevent "aborted transaction" errors
+        db.rollback()
         logger.error(f"Database error retrieving financial data: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -361,25 +371,33 @@ async def get_access_limits(
             unlimited_access=True
         )
     
-    # Get count of available assets by type
-    available_query = """
-        SELECT asset_type, COUNT(DISTINCT symbol) as count
-        FROM realized_volatility_data
-        GROUP BY asset_type
-    """
-    
-    available_results = db.execute(text(available_query)).fetchall()
-    total_available = {}
-    for row in available_results:
-        normalized_type = ASSET_TYPE_MAPPING.get(row.asset_type.lower(), row.asset_type)
-        # For tests we need to map 'equity' back to 'stock'
-        if normalized_type == 'equity':
-            total_available['stock'] = row.count
-        else:
-            total_available[normalized_type] = row.count
-    
-    # Calculate used and remaining
-    used = count_unique_assets(db, str(current_user.user_id))
+    try:
+        # Get count of available assets by type
+        available_query = """
+            SELECT asset_type, COUNT(DISTINCT symbol) as count
+            FROM realized_volatility_data
+            GROUP BY asset_type
+        """
+        
+        available_results = db.execute(text(available_query)).fetchall()
+        total_available = {}
+        for row in available_results:
+            normalized_type = ASSET_TYPE_MAPPING.get(row.asset_type.lower(), row.asset_type)
+            # For tests we need to map 'equity' back to 'stock'
+            if normalized_type == 'equity':
+                total_available['stock'] = row.count
+            else:
+                total_available[normalized_type] = row.count
+        
+        # Calculate used and remaining
+        used = count_unique_assets(db, str(current_user.user_id))
+    except SQLAlchemyError as e:
+        # Rollback the transaction to prevent "aborted transaction" errors
+        db.rollback()
+        logger.error(f"Database error in get_access_limits: {e}")
+        # Return default values on error
+        total_available = {}
+        used = {}
     normalized_used = {}
     for asset_type, count in used.items():
         normalized_type = ASSET_TYPE_MAPPING.get(asset_type.lower(), asset_type)
