@@ -31,6 +31,7 @@ from collections import defaultdict
 import wmill
 import s3fs
 import pyarrow
+import requests
 
 
 # --- Globals ---
@@ -41,13 +42,13 @@ thread_local = threading.local()
 def format_log_header(type, message):
     '''Format a header to make certain types of messages more visible'''
     if type == "PHASE":
-        return f"\\n{'='*30} {message} {'='*30}"
+        return f"\n{'='*30} {message} {'='*30}"
     elif type == "PROCESS":
-        return f"\\n[PROCESS] {'-'*10} {message} {'-'*10}"
+        return f"\n[PROCESS] {'-'*10} {message} {'-'*10}"
     elif type == "STEP":
-        return f"\\n  [STEP] {message}"
+        return f"\n  [STEP] {message}"
     elif type == "COMPLETE":
-        return f"\\n[COMPLETE] {'-'*10} {message} {'-'*10}"
+        return f"\n[COMPLETE] {'-'*10} {message} {'-'*10}"
     elif type == "INFO":
         return f"[INFO] {message}"
     elif type == "WARNING":
@@ -67,6 +68,47 @@ def safe_print(message, log_type=None):
         else:
             print(message)
             logging.info(message)
+
+# --- Slack Notification Function ---
+def send_slack_notification(message_text):
+    """
+    Sends a notification message to a configured Slack channel.
+    
+    Reads the Slack API token and Channel ID from environment variables
+    set in Windmill.
+    """
+    slack_token = wmill.get_variable("u/niccolosalvini27/SLACK_API_TOKEN")
+    slack_channel = wmill.get_variable("u/niccolosalvini27/SLACK_CHANNEL_ID")
+
+    if not slack_token or not slack_channel:
+        safe_print("Variabili d'ambiente Slack non trovate (SLACK_API_TOKEN, SLACK_CHANNEL_ID). Notifica saltata.", "WARNING")
+        return
+
+    url = "https://slack.com/api/chat.postMessage"
+    headers = {
+        "Authorization": f"Bearer {slack_token}",
+        "Content-type": "application/json; charset=utf-8"
+    }
+    payload = {
+        "channel": slack_channel,
+        "text": message_text
+    }
+
+    try:
+        response = requests.post(url, headers=headers, json=payload, timeout=30)
+        response.raise_for_status()  # Lancia un'eccezione per risposte HTTP 4xx/5xx
+        
+        response_json = response.json()
+        if response_json.get("ok"):
+            safe_print("Notifica di riepilogo inviata a Slack con successo.", "INFO")
+        else:
+            safe_print(f"Errore nell'invio a Slack: {response_json.get('error')}", "ERROR")
+
+    except requests.exceptions.RequestException as e:
+        safe_print(f"Errore di rete durante l'invio della notifica a Slack: {e}", "ERROR")
+    except Exception as e:
+        safe_print(f"Errore imprevisto durante l'invio a Slack: {e}", "ERROR")
+
 
 # Logger configuration
 logger = logging.getLogger("OutliersProcessor")
@@ -532,11 +574,11 @@ def main():
         
         if not pipelines_to_run:
             safe_print("No pipeline to run. Check configuration.", "ERROR")
-            sys.exit(1)
         
         safe_print(f"Pipelines to execute: {pipelines_to_run}", "INFO")
         
         results = {}
+        all_outliers_stats = []  # Accumulate detailed statistics
         for pipeline_name in pipelines_to_run:
             if pipeline_name not in config['pipelines'] or not config['pipelines'][pipeline_name].get('enabled', True):
                 safe_print(f"Pipeline '{pipeline_name}' disabled or not found. Skipping.", "INFO")
@@ -576,6 +618,9 @@ def main():
                 max_workers
             )
             
+            # Accumulate statistics for Slack notification
+            all_outliers_stats.extend(outliers_results)
+            
             # Check if successful
             total_errors = sum(r["errors"] for r in outliers_results)
             pipeline_success = total_errors == 0
@@ -587,18 +632,81 @@ def main():
                 safe_print(f"Outliers processing completed with {total_errors} errors for {pipeline_name}", "ERROR")
         
         end_time = datetime.now()
+        total_duration = end_time - start_time
+        
         safe_print("FINAL SUMMARY", "PHASE")
-        safe_print(f"Total time: {end_time - start_time}")
+        safe_print(f"Total time: {total_duration}")
         
         for pipeline, success in results.items():
             safe_print(f"{pipeline:>10}: {'SUCCESS' if success else 'FAILED'}")
         
+        # Prepare Slack notification message
+        successful_pipelines = sum(1 for success in results.values() if success)
+        failed_pipelines = len(results) - successful_pipelines
+        
+        # Calculate detailed statistics from accumulated outliers results
+        total_files_processed = sum(r.get("processed", 0) for r in all_outliers_stats)
+        total_files_skipped = sum(r.get("skipped", 0) for r in all_outliers_stats)
+        total_files_errors = sum(r.get("errors", 0) for r in all_outliers_stats)
+        total_files_analyzed = sum(r.get("total_files", 0) for r in all_outliers_stats)
+        total_symbols = len(all_outliers_stats)
+        
         if all(results.values()):
-            safe_print("\\nALL PIPELINES SUCCESSFULLY COMPLETED!", "PHASE")
-            sys.exit(0)
+            safe_print("\nALL PIPELINES SUCCESSFULLY COMPLETED!", "PHASE")
+            status_emoji = "✅"
+            status_text = "SUCCESS"
         else:
-            safe_print("\\nSOME PIPELINES FAILED!", "PHASE")
-            sys.exit(1)
+            safe_print("\nSOME PIPELINES FAILED!", "PHASE")
+            status_emoji = "⚠️" if failed_pipelines < successful_pipelines else "❌"
+            status_text = "PARTIAL FAILURE" if successful_pipelines > 0 else "FAILURE"
+        
+        # Create Slack message - build as list and join
+        message_parts = [
+            f"{status_emoji} **OUTLIERS DETECTION COMPLETED** {status_emoji}",
+            "",
+            f"**Status:** {status_text}",
+            f"**Duration:** {str(total_duration).split('.')[0]}",
+            f"**Pipelines:** {successful_pipelines}/{len(results)} successful",
+            "",
+            "**Pipeline Results:**"
+        ]
+        
+        # Add pipeline results
+        for pipeline, success in results.items():
+            result_emoji = "✅" if success else "❌"
+            message_parts.append(f"{result_emoji} {pipeline}: {'SUCCESS' if success else 'FAILED'}")
+        
+        # Add detailed file statistics if available
+        if all_outliers_stats:
+            message_parts.extend([
+                "",
+                "**File Processing Summary:**",
+                f"📁 Total files analyzed: {total_files_analyzed}",
+                f"✅ Successfully processed: {total_files_processed}",
+                f"⏭️ Skipped (already processed): {total_files_skipped}",
+                f"❌ Errors: {total_files_errors}",
+                f"🏷️ Symbols processed: {total_symbols}"
+            ])
+            
+            if total_files_analyzed > 0:
+                success_rate = (total_files_processed / total_files_analyzed) * 100
+                message_parts.append(f"📊 Success rate: {success_rate:.1f}%")
+        
+        message_parts.extend([
+            "",
+            f"**Timestamp:** {end_time.strftime('%Y-%m-%d %H:%M:%S')}"
+        ])
+        
+        slack_message = "\n".join(message_parts)
+        
+        # Send Slack notification
+        try:
+            send_slack_notification(slack_message)
+        except Exception as e:
+            safe_print(f"Error sending Slack notification: {e}", "WARNING")
 
     except Exception as e:
         safe_print(f"CRITICAL ERROR: {e}", "ERROR")
+
+if __name__ == "__main__":
+    main()
