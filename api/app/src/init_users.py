@@ -183,7 +183,7 @@ def assign_permissions(cur):
     for asset_id, symbol, category in all_assets:
         if category in assets_by_category:
             assets_by_category[category].append((asset_id, symbol))
-
+    
     permissions_to_insert = []
 
     for user_id, role_name in users:

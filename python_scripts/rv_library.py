@@ -102,182 +102,188 @@ def realized_range(data):
     #print(resampled)
     return resampled'''
 
-def resample_prices(prices, resample_freq='5T', resampling_method='last'):
+def detect_market_open(first_data_time):
+    """Detect market opening time based on first data point - Fixed forex logic."""
+    first_hour = first_data_time.hour
+    
+    if 9 <= first_hour <= 10:  # Stock market
+        return first_data_time.replace(hour=9, minute=30, second=0, microsecond=0)
+    elif first_hour in [0, 16, 17, 18]:  # Futures/forex - BUT check if we actually need backfill
+        potential_open = first_data_time.replace(hour=first_hour, minute=0, second=0, microsecond=0)
+        
+        # For forex: if first data is far from hour boundary, just use first data time
+        minutes_from_hour = first_data_time.minute + first_data_time.second/60 + first_data_time.microsecond/60000000
+        if minutes_from_hour > 30:  # More than 30 minutes into the hour
+            # Just round down to nearest 5-minute boundary
+            rounded_minute = (first_data_time.minute // 5) * 5
+            return first_data_time.replace(minute=rounded_minute, second=0, microsecond=0)
+        else:
+            return potential_open
+    else:  # Unknown market - use first data time rounded down
+        rounded_minute = (first_data_time.minute // 5) * 5
+        return first_data_time.replace(minute=rounded_minute, second=0, microsecond=0)
+
+
+def resample_prices(prices, resample_freq='5T', resampling_method='last', 
+                           origin_offset_minutes=0):
+    """
+    Unified resampling with SMART backfill logic - no excessive backfill for forex.
+    """
+    
+    first_data_time = prices.index[0]
+    market_open = detect_market_open(first_data_time)
+    
+    # Calculate effective origin (market_open + offset)
+    effective_origin = market_open + pd.Timedelta(minutes=origin_offset_minutes)
+    
+    # SMART BACKFILL DECISION: Only backfill if gap is reasonable
+    gap_minutes = (first_data_time - effective_origin).total_seconds() / 60
+    should_backfill = abs(gap_minutes) <= 60  # Only backfill if gap <= 1 hour
+    
+    if not should_backfill:
+        # Use first data time as starting point instead
+        rounded_minute = (first_data_time.minute // 5) * 5
+        effective_origin = first_data_time.replace(minute=rounded_minute, second=0, microsecond=0)
+        effective_origin = effective_origin + pd.Timedelta(minutes=origin_offset_minutes)
+    
+    # Perform resampling with origin
+    resample_kwargs = {
+        'label': 'right',
+        'closed': 'right',
+        'origin': effective_origin
+    }
+    
     if resampling_method == 'mean':
-        resampled = prices.resample(resample_freq, label='right', closed='right').mean()
+        resampled = prices.resample(resample_freq, **resample_kwargs).mean()
     elif resampling_method == 'last':
-        resampled = prices.resample(resample_freq, label='right', closed='right').last()
+        resampled = prices.resample(resample_freq, **resample_kwargs).last()
     elif resampling_method == 'median':
-        resampled = prices.resample(resample_freq, label='right', closed='right').median()
+        resampled = prices.resample(resample_freq, **resample_kwargs).median()
     else:
         raise ValueError(f"Method '{resampling_method}' not supported.")
     
-    first_available_price = prices.iloc[0]
-    first_data_time = prices.index[0]
-    
-    # AUTO-DETECT: Determina l'orario di apertura probabile
-    first_hour = first_data_time.hour
-    #first_minute = first_data_time.minute
-    
-    # Logica di auto-detection
-    if 9 <= first_hour <= 10:  # Probabilmente stock market (9:30-10:30)
-        market_open_hour = 9
-        market_open_minute = 30
-    elif first_hour == 0:  # Probabilmente futures/forex
-        market_open_hour = 0
-        market_open_minute = 0
-    elif first_hour == 17:  # Probabilmente futures/forex
-        market_open_hour = 17
-        market_open_minute = 0
-    elif first_hour == 18:  # Probabilmente futures/forex
-        market_open_hour = 18
-        market_open_minute = 0
-    else:  # Per altri casi, usa un backfill limitato
-        # Backfill massimo 1 ora prima del primo dato
-        freq_minutes = pd.Timedelta(resample_freq).total_seconds() / 60
-        #max_periods_back = int(60 / freq_minutes)  # 1 ora di periodi
-        
-        earliest_start = first_data_time - pd.Timedelta(minutes=60)
-        start_time = max(earliest_start, 
-                        first_data_time.replace(hour=0, minute=0, second=0, microsecond=0))
-        
-        end_time = resampled.index[-1]
-        complete_grid = pd.date_range(start=start_time, end=end_time, freq=resample_freq)
-        resampled = resampled.reindex(complete_grid)
-        
-        mask_before_data = resampled.index < first_data_time
-        resampled.loc[mask_before_data] = first_available_price
-        resampled = resampled.ffill()
-        
-        return resampled
-    
-    # Per stock/futures con orari standard
-    market_open = first_data_time.replace(hour=market_open_hour, minute=market_open_minute, 
-                                         second=0, microsecond=0)
-    
-    # Se il primo dato è molto dopo l'apertura, usa backfill limitato
-    gap_minutes = (first_data_time - market_open).total_seconds() / 60
-    if gap_minutes > 120:  # Se gap > 2 ore, probabilmente asset diverso
-        # Fallback: backfill solo 1 ora
-        start_time = first_data_time - pd.Timedelta(minutes=60)
-        start_time = max(start_time, market_open)
+    # Create grid only from first actual data point forward
+    if should_backfill:
+        start_time = effective_origin
     else:
-        start_time = market_open
+        start_time = resampled.index[0]  # Start from first actual resampled point
     
-    # Crea griglia completa
     end_time = resampled.index[-1]
     complete_grid = pd.date_range(start=start_time, end=end_time, freq=resample_freq)
+    
+    # Reindex to complete grid
     resampled = resampled.reindex(complete_grid)
     
-    # Backfill
-    mask_before_data = resampled.index < first_data_time
-    resampled.loc[mask_before_data] = first_available_price
-    resampled = resampled.ffill()
-    #print(resampled)
+    # Count REAL observations (before any filling)
+    real_observations_before_first_data = (resampled.index < first_data_time).sum()
+    total_real_observations = resampled.count()
     
-    return resampled
-
- 
+    # CORRECTED M calculation
+    if should_backfill and real_observations_before_first_data > 0:
+        # We have reasonable backfill: the first backfill point counts as real
+        M = total_real_observations
+    else:
+        # No backfill or excessive backfill avoided: standard counting
+        M = total_real_observations - 1
+    
+    # Apply backfill only if reasonable
+    if should_backfill:
+        first_available_price = prices.iloc[0]
+        mask_before_data = resampled.index < first_data_time
+        resampled.loc[mask_before_data] = first_available_price
+    
+    # Forward fill any remaining NaN
+    resampled = resampled.ffill().dropna()
+    
+    return resampled, M
 
 def calculate_subsampled_metric(prices, resample_freq, metric_func, 
-                                       n_subsamples=5, resampling_method='last'):
+                               n_subsamples=5, resampling_method='last'):
     """
-    Calculate a subsampled volatility metric.
-     
-    """   
-
-    # Calculate standard metric
-    resampled_standard = resample_prices(prices, resample_freq, resampling_method) 
-    standard_metric = metric_func(resampled_standard)
-    
-    # Parse frequency
+    Calculate subsampled metric with consistent backfill logic.
+    """
+    #print('prices', prices)
+    # Parse frequency to determine offset step
     base_freq = int(''.join(filter(str.isdigit, resample_freq)))
-    freq_unit = ''.join(filter(str.isalpha, resample_freq))
-    original_start = prices.index[0].replace(microsecond=0)
+    offset_step = base_freq / n_subsamples  # minutes per subsample
     
-    # Initialize with the standard value as the first subsample
-    subsample_metrics = [standard_metric]
+    subsample_metrics = []
+    subsample_M_values = []
     
-    # Calculate additional subsamples (i=1 onwards)
-    for i in range(1, n_subsamples):  # NOTA: starts from 1, not 0
-        
-        # Calculate time offset
-        if freq_unit.upper() == 'T':
-            offset_seconds = (base_freq * 60 / n_subsamples) * i
-            time_offset = pd.Timedelta(seconds=offset_seconds)
-        elif freq_unit.upper() == 'S':
-            offset_seconds = (base_freq / n_subsamples) * i
-            time_offset = pd.Timedelta(seconds=offset_seconds)
-        elif freq_unit.upper() == 'H':
-            offset_minutes = (base_freq * 60 / n_subsamples) * i
-            time_offset = pd.Timedelta(minutes=offset_minutes)
-        else:
-            offset_minutes = (base_freq / n_subsamples) * i
-            time_offset = pd.Timedelta(minutes=offset_minutes)
-        
-        resample_origin = original_start + time_offset
+    # Calculate all subsamples (including standard as subsample 0)
+    for i in range(n_subsamples):
+        offset_minutes = offset_step * i
         
         try:
-            resampled_i = prices.resample(
-                resample_freq,
-                origin=resample_origin,
-                label='right',
-                closed='right'
-            ).agg(resampling_method).ffill().dropna()
+            resampled_i, M_i = resample_prices(
+                prices, resample_freq, resampling_method, 
+                origin_offset_minutes=offset_minutes
+            )
             
-            if len(resampled_i) >= 2:
-                subsample_metric = metric_func(resampled_i)
+            if len(resampled_i) >= 2 and M_i >= 1:
+                subsample_metric = metric_func(resampled_i, M_i)
                 if not np.isnan(subsample_metric):
                     subsample_metrics.append(subsample_metric)
-            #print(resampled_i)         
+                    subsample_M_values.append(M_i)
+                    
+            #print(resampled_i)
+                        
         except Exception as e:
             print(f"Error processing subsample {i}: {e}")
             continue
-    #print(subsample_metrics) 
-    # Average across all subsamples
+
+    
+    if len(subsample_metrics) == 0:
+        return np.nan, np.nan
+    
+    # First metric is standard, average is subsampled
+    standard_metric = subsample_metrics[0]
     subsampled_metric = np.mean(subsample_metrics)
     
     return standard_metric, subsampled_metric
 
-def realized_variance(data, resample_freq='5T', price_col='price', 
+
+def realized_power_variation(data, exp=2, resample_freq='5T', price_col='price', 
                       resampling_method='last', calculate_subsample=True, n_subsamples=5):
     """
-    Calculate Realized Variance with subsampling.
+    Calculate Realized Variance (exp=2) or Realized Quarticity (exp=4) with subsampling.
     """
-    def realized_variance_metric(resampled_prices):
-        """Calculate realized variance from resampled prices."""
-        #log_returns = np.log(resampled_prices).diff().dropna()
-        log_returns = np.diff(np.log(resampled_prices.values))
-        return (log_returns ** 2).sum()
     
+    def realized_power_variation_metric(resampled_prices, M, exp=2):
+        """Calculate realized power variation from resampled prices."""
+        log_returns = np.log(resampled_prices).diff().dropna()
+        rv = (log_returns ** exp).sum()
+        
+        if exp == 4:
+            #print(f'len(log_returns): {len(log_returns)}, M: {M}')
+            return (M/3) * rv
+        else:
+            return rv
     
-    # Ensure index is datetime
+    if exp not in [2, 4]:
+        raise ValueError("exp must be 2 (variance) or 4 (quarticity)")
+    
+    # Ensure index is datetime and sorted
     if not isinstance(data.index, pd.DatetimeIndex):
-        try:
-            data.index = pd.to_datetime(data.index)
-        except Exception as e:
-            raise ValueError(f"Could not convert index to datetime: {e}")
-    # Ensure data is sorted by time
+        data.index = pd.to_datetime(data.index)
     data = data.sort_index()
-
-    # Extract price series
-    prices = data[price_col]    
+    prices = data[price_col]
     
-    # Return early if subsampling is not requested
+    # Return early if subsampling not requested
     if not calculate_subsample:
-        resampled = resample_prices(prices, resample_freq, resampling_method) 
-        # Calculate standard realized variance
-        rv = realized_variance_metric(resampled)
+        resampled, M = resample_prices(prices, resample_freq, resampling_method)
+        rv = realized_power_variation_metric(resampled, M, exp)
         return rv
     else:
+        # Subsampling
+        def metric_func_wrapper(resampled_prices, M):
+            return realized_power_variation_metric(resampled_prices, M, exp)
+        
         rv, rv_ss = calculate_subsampled_metric(
-            prices, 
-            resample_freq, 
-            realized_variance_metric, 
-            n_subsamples, 
-            resampling_method
+            prices, resample_freq, metric_func_wrapper, n_subsamples, resampling_method
         )
         return rv, rv_ss
+
    
 def bipower_variation(data, resample_freq='5T', price_col='price', 
                       resampling_method='last', calculate_subsample=True, n_subsamples=5):
@@ -285,7 +291,7 @@ def bipower_variation(data, resample_freq='5T', price_col='price',
     Calculate Bipower Variation with subsampling.
     """
 
-    def bipower_variation_metric(resampled_prices):
+    def bipower_variation_metric(resampled_prices, M = None):
         """Calculate bipower variation from resampled prices."""
         log_returns = np.log(resampled_prices).diff().dropna()
         lagged_returns = log_returns.shift(1)
@@ -295,8 +301,8 @@ def bipower_variation(data, resample_freq='5T', price_col='price',
         bv = (np.pi / 2) * np.sum(return_products)
         
         # Debiased measure
-        # m = len(log_returns)
-        # m = (np.abs(log_returns) > 1e-12).sum()
+        #m = len(log_returns)
+        #m = (np.abs(log_returns) > 1e-12).sum()
         #bv_debiased = m/(m - 1) * bv if m > 1 else bv
         
         return bv #bv_debiased
@@ -317,8 +323,8 @@ def bipower_variation(data, resample_freq='5T', price_col='price',
 
     # Calculate standard bipower variation
     if not calculate_subsample:
-        resampled = resample_prices(prices, resample_freq, resampling_method) 
-        bv = bipower_variation_metric(resampled)
+        resampled, M = resample_prices(prices, resample_freq, resampling_method) 
+        bv = bipower_variation_metric(resampled, M)
         return bv
     else:
         bv, bv_ss = calculate_subsampled_metric(
@@ -336,19 +342,20 @@ def realized_semivariance(data, resample_freq='5T', price_col='price',
     Separates the realized variance into positive and negative components.
     
     """
-    def realized_positive_semivariance_metric(resampled_prices):
+    def realized_positive_semivariance_metric(resampled_prices, M=None):
         """
         Calculate realized semivariance (positive and negative) from resampled prices.
         
         """
         # Calculate log returns
         log_returns = np.log(resampled_prices).diff().dropna()
+        #log_returns = np.diff(np.log(resampled_prices.values))
         
         rsv_positive = (log_returns[log_returns > 0] ** 2).sum()
         
         return rsv_positive
     
-    def realized_negative_semivariance_metric(resampled_prices):
+    def realized_negative_semivariance_metric(resampled_prices, M=None):
         """
         Calculate realized semivariance (positive and negative) from resampled prices.
         
@@ -377,9 +384,9 @@ def realized_semivariance(data, resample_freq='5T', price_col='price',
     # Return early if subsampling is not requested
     if not calculate_subsample:
         # Calculate standard realized semivariance
-        resampled = resample_prices(prices, resample_freq, resampling_method)  
-        rsv_positive = realized_positive_semivariance_metric(resampled)
-        rsv_negative = realized_negative_semivariance_metric(resampled)
+        resampled, M = resample_prices(prices, resample_freq, resampling_method)  
+        rsv_positive = realized_positive_semivariance_metric(resampled, M)
+        rsv_negative = realized_negative_semivariance_metric(resampled, M)
         return rsv_positive, rsv_negative
     else:    
         rsv_positive, rsv_ss_positive = calculate_subsampled_metric(
@@ -406,7 +413,7 @@ def median_realized_variance(data, resample_freq='5T', price_col='price',
     Calculate Median Realized Variance (MedRV) with subsampling.
     This estimator is more robust to jumps and microstructure noise.
     """
-    def median_rv_metric(resampled_prices):
+    def median_rv_metric(resampled_prices, M=None):
         """Calculate median realized variance from resampled prices."""
         # Calculate log returns
         #log_price = np.log(resampled_prices)
@@ -428,7 +435,8 @@ def median_realized_variance(data, resample_freq='5T', price_col='price',
         
         # Apply scaling factor
         medRVScale = np.pi/(6-4*np.sqrt(3)+np.pi)
-        medRV = medRV * medRVScale * (n/(n-2))
+        medRV = medRV * medRVScale * (M/(M-2))#* (n/(n-2))
+          
         
         return medRV
         
@@ -447,8 +455,8 @@ def median_realized_variance(data, resample_freq='5T', price_col='price',
     # Calculate standard median realized variance
     # Return early if subsampling is not requested
     if not calculate_subsample:
-        resampled = resample_prices(prices, resample_freq, resampling_method)
-        medrv = median_rv_metric(resampled)  
+        resampled, M = resample_prices(prices, resample_freq, resampling_method)
+        medrv = median_rv_metric(resampled, M)  
         return medrv
     else:
         # Use the subsampling utility
@@ -468,7 +476,7 @@ def min_realized_variance(data, resample_freq='5T', price_col='price',
     """
     Calculate Minimum Realized Variance (MinRV) with subsampling.
     """
-    def min_rv_metric(resampled_prices):
+    def min_rv_metric(resampled_prices, M=None):
         """Calculate minimum realized variance from resampled prices."""
         # Calculate log returns
         #log_price = np.log(resampled_prices)
@@ -490,7 +498,7 @@ def min_realized_variance(data, resample_freq='5T', price_col='price',
         
         # Apply scaling factor
         minRVscale = np.pi/(np.pi-2)
-        minRV = minRV * minRVscale * (n/(n-1))
+        minRV = minRV * minRVscale * (M/(M-2))#* (n/(n-1))
         
         return minRV
     
@@ -511,8 +519,8 @@ def min_realized_variance(data, resample_freq='5T', price_col='price',
     # Calculate standard minimum realized variance    
     # Return early if subsampling is not requested
     if not calculate_subsample:
-        resampled = resample_prices(prices, resample_freq, resampling_method)
-        minrv = min_rv_metric(resampled)
+        resampled, M = resample_prices(prices, resample_freq, resampling_method)
+        minrv = min_rv_metric(resampled, M)
         return minrv
     else:    
         # Use the subsampling utility
@@ -573,7 +581,9 @@ def resample_with_time_offsets(df, price_col, interval, offset_unit='S', num_off
         
         # Calculate returns and RV
         #shifted_returns = np.log(shifted_prices).diff().dropna()
-        shifted_returns = np.diff(np.log(shifted_prices.values))
+        shifted_returns = np.diff(np.log(shifted_prices.values)) # <--- usare questo
+        
+        
         
         RV = np.sum(shifted_returns**2)
         RV_sparse_values.append(RV)
@@ -599,7 +609,7 @@ def omega_squared(df, price_col, sample_freq ='2T'):
     # Extract price series
     prices = df[price_col]
 
-    resampled = resample_prices(prices, sample_freq, 'last') 
+    resampled, _ = resample_prices(prices, sample_freq, 'last') 
     # Calculate standard realized variance
     log_returns = np.diff(np.log(resampled.values))
     rv = (log_returns ** 2).sum()
@@ -680,7 +690,7 @@ def realized_kernel_variance(df, resample_freq='1S', price_col='price', resampli
     mod_prices.iloc[-1] = end_avg
 
     # Resample prices and compute returns
-    resampled = resample_prices(mod_prices, resample_freq, resampling_method)  
+    resampled, _ = resample_prices(mod_prices, resample_freq, resampling_method)  
   
     #resampled_returns = np.log(resampled).diff().dropna() NON so perchè ma mi da risultati diversi se uso questo per outocov
     resampled_returns = np.diff(np.log(resampled.values))

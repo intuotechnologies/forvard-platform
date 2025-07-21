@@ -52,15 +52,15 @@ downloaded_symbols_lock = threading.Lock()
 def format_log_header(type, message):
     '''Format a header to make certain types of messages more visible'''
     if type == "PHASE":
-        return f"\\n{'='*30} {message} {'='*30}"
+        return f"\n{'='*30} {message} {'='*30}"
     elif type == "DOWNLOAD":
-        return f"\\n[DOWNLOAD] {'-'*10} {message} {'-'*10}"
+        return f"\n[DOWNLOAD] {'-'*10} {message} {'-'*10}"
     elif type == "PROCESS":
-        return f"\\n[PROCESS] {'-'*10} {message} {'-'*10}"
+        return f"\n[PROCESS] {'-'*10} {message} {'-'*10}"
     elif type == "STEP":
-        return f"\\n  [STEP] {message}"
+        return f"\n  [STEP] {message}"
     elif type == "COMPLETE":
-        return f"\\n[COMPLETE] {'-'*10} {message} {'-'*10}"
+        return f"\n[COMPLETE] {'-'*10} {message} {'-'*10}"
     elif type == "INFO":
         return f"[INFO] {message}"
     elif type == "WARNING":
@@ -80,6 +80,47 @@ def safe_print(message, log_type=None):
         else:
             print(message)
             logging.info(message)
+
+# --- Slack Notification Function (NEW) ---
+def send_slack_notification(message_text):
+    """
+    Sends a notification message to a configured Slack channel.
+    
+    Reads the Slack API token and Channel ID from environment variables
+    set in Windmill.
+    """
+    slack_token = wmill.get_variable("u/niccolosalvini27/SLACK_API_TOKEN")
+    slack_channel = wmill.get_variable("u/niccolosalvini27/SLACK_CHANNEL_ID")
+
+    if not slack_token or not slack_channel:
+        safe_print("Variabili d'ambiente Slack non trovate (SLACK_API_TOKEN, SLACK_CHANNEL_ID). Notifica saltata.", "WARNING")
+        return
+
+    url = "https://slack.com/api/chat.postMessage"
+    headers = {
+        "Authorization": f"Bearer {slack_token}",
+        "Content-type": "application/json; charset=utf-8"
+    }
+    payload = {
+        "channel": slack_channel,
+        "text": message_text
+    }
+
+    try:
+        response = requests.post(url, headers=headers, json=payload, timeout=30)
+        response.raise_for_status()  # Lancia un'eccezione per risposte HTTP 4xx/5xx
+        
+        response_json = response.json()
+        if response_json.get("ok"):
+            safe_print("Notifica di riepilogo inviata a Slack con successo.", "INFO")
+        else:
+            safe_print(f"Errore nell'invio a Slack: {response_json.get('error')}", "ERROR")
+
+    except requests.exceptions.RequestException as e:
+        safe_print(f"Errore di rete durante l'invio della notifica a Slack: {e}", "ERROR")
+    except Exception as e:
+        safe_print(f"Errore imprevisto durante l'invio a Slack: {e}", "ERROR")
+
 
 # Logger configuration
 logger = logging.getLogger("KibotDownloader")
@@ -915,7 +956,7 @@ class KibotDownloader:
             if total_items == 0:
                 logger.info("No new data to download. All files are already existing.")
                 if self.config.download_adjustments: self.download_adjustments()
-                return True
+                return True, self.stats
             
             logger.info(f"Downloading {total_items} file for {len(self.config.symbols)} symbols...")
             
@@ -956,6 +997,7 @@ class KibotDownloader:
                 logger.info("Download adjustment data completed")
             
             total_time = time.time() - start_time
+            self.stats['total_time'] = total_time
             total_time_str = time.strftime("%H:%M:%S", time.gmtime(total_time))
             
             # Replaced multiline f-string with individual log entries for better formatting
@@ -978,10 +1020,10 @@ class KibotDownloader:
             logger.info("==============================")
 
             if self.config.generate_detailed_report: self._generate_detailed_report()
-            return True
+            return True, self.stats
         except Exception as e:
             logger.error(f"Errore durante il download: {e}", exc_info=True)
-            return False
+            return False, self.stats
         finally:
             self.processing_done.set()
             self.http_client.close_all()
@@ -1106,7 +1148,7 @@ def load_config():
       },
       "pipelines": {
        "stocks_batch1": {
-          "enabled": True,
+          "enabled": False,
           "asset_type": "stocks",
           "symbols": ["GE", "JNJ"], # Directly embedded
           "date_range": {
@@ -1126,9 +1168,9 @@ def load_config():
           "steps": ["download", "outliers", "realized_variance"]
         },
         "ETFs": {
-          "enabled": False,
+          "enabled": True,
           "asset_type": "ETFs",
-          "symbols": [], # Empty as per user
+          "symbols": ["AGG", "BND", "GLD", "SLV", "SUSA"], # Empty as per user
           "date_range": {
             "start_date": "03/01/2024",
             "end_date": "03/01/2025"
@@ -1136,7 +1178,7 @@ def load_config():
           "steps": ["download", "outliers", "realized_variance"]
         },
         "forex": {
-          "enabled": False,
+          "enabled": True,
           "asset_type": "forex", 
           "symbols": ["EURUSD", "JPYUSD"], # Directly embedded
           "date_range": {
@@ -1146,7 +1188,7 @@ def load_config():
           "steps": ["download", "realized_variance"]
         },
         "futures": {
-          "enabled": False,
+          "enabled": True,
           "asset_type": "futures",
           "symbols": ["CL", "GC"], # Directly embedded
           "date_range": {
@@ -1195,7 +1237,7 @@ def download_worker(config_data, pipeline_name, symbols_batch, result_queue):
 
     if not symbols_to_download:
         safe_print(f"No new symbols to download for {pipeline_name}, all already processed", "INFO")
-        result_queue.put({'pipeline': pipeline_name, 'symbols': symbols_batch, 'status': True, 'asset_type': asset_type})
+        result_queue.put({'pipeline': pipeline_name, 'symbols': symbols_batch, 'status': True, 'asset_type': asset_type, 'stats': {}})
         return True
     
     safe_print(f"Batch download of {len(symbols_to_download)}/{len(symbols_batch)} symbols for {pipeline_name}", "DOWNLOAD")
@@ -1214,8 +1256,9 @@ def download_worker(config_data, pipeline_name, symbols_batch, result_queue):
                 file_format=config_data['general']['file_format']
             )
             downloader = KibotDownloader(download_config)
-            success = downloader.run()
-            result_queue.put({'pipeline': pipeline_name, 'symbols': symbols_batch, 'status': success, 'asset_type': asset_type})
+            # MODIFIED: Capture stats from the run
+            success, stats = downloader.run()
+            result_queue.put({'pipeline': pipeline_name, 'symbols': symbols_batch, 'status': success, 'asset_type': asset_type, 'stats': stats})
             safe_print(f"Download completed batch of {len(symbols_to_download)} symbols for {pipeline_name}", "COMPLETE")
             return success
         except Exception as e:
@@ -1223,9 +1266,10 @@ def download_worker(config_data, pipeline_name, symbols_batch, result_queue):
             for s in symbols_to_download:
                 mark_symbol_as_downloaded(s, date_range['start_date'], asset_type, False)
                 mark_symbol_as_downloaded(s, date_range['end_date'], asset_type, False)
+            result_queue.put({'pipeline': pipeline_name, 'symbols': symbols_batch, 'status': False, 'asset_type': asset_type, 'stats': {}})
             return False
 
-# --- Main execution block ---
+# --- Main execution block (MODIFIED) ---
 def main():
     parser = argparse.ArgumentParser(description='Standalone Data Downloader for ForVARD Project')
     parser.add_argument('--pipelines', nargs='+', help='Pipelines to run (e.g., stocks forex futures)')
@@ -1253,6 +1297,9 @@ def main():
         safe_print(f"Pipelines to execute: {pipelines_to_run}", "INFO")
         
         results = {}
+        all_stats = []
+        total_batches = 0
+
         for pipeline_name in pipelines_to_run:
             if pipeline_name not in config['pipelines'] or not config['pipelines'][pipeline_name].get('enabled', True):
                 safe_print(f"Pipeline '{pipeline_name}' disabled or not found. Skipping.", "INFO")
@@ -1265,6 +1312,11 @@ def main():
             clean_kibot_logger()
             
             all_symbols = pipeline_config['symbols']
+            if not all_symbols:
+                safe_print(f"No symbols defined for pipeline '{pipeline_name}'. Skipping.", "INFO")
+                results[pipeline_name] = True # Consider it a success if there's nothing to do
+                continue
+
             batch_size = max(15, len(all_symbols) // (os.cpu_count() or 4)) if len(all_symbols) >= 50 else \
                          max(10, len(all_symbols) // 3) if len(all_symbols) >= 20 else \
                          max(5, len(all_symbols) // 2) if len(all_symbols) > 10 else len(all_symbols)
@@ -1277,28 +1329,77 @@ def main():
             with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
                 futures = [executor.submit(download_worker, config, pipeline_name, batch, result_queue) for batch in symbol_batches]
                 
-                pipeline_success = all(f.result() for f in concurrent.futures.as_completed(futures))
+                # Wait for all futures to complete
+                concurrent.futures.wait(futures)
+                
+                # Check results
+                pipeline_success = all(f.result() for f in futures)
                 results[pipeline_name] = pipeline_success
-        
+
+                # Collect stats from the queue
+                while not result_queue.empty():
+                    result_item = result_queue.get()
+                    if result_item.get('stats'):
+                        all_stats.append(result_item['stats'])
+
+        # --- FINAL SUMMARY AND SLACK NOTIFICATION ---
         end_time = datetime.now()
+        total_duration = end_time - start_time
         safe_print("FINAL SUMMARY", "PHASE")
-        safe_print(f"Total time: {end_time - start_time}")
+        safe_print(f"Total time: {total_duration}")
         
+        # Aggregate stats from all runs
+        aggregated_stats = defaultdict(int)
+        for stat_dict in all_stats:
+            for key, value in stat_dict.items():
+                if key != 'total_time':
+                    aggregated_stats[key] += value
+
+        # Build Slack message
+        final_status_emoji = "✅" if all(results.values()) else "⚠️"
+        slack_message = f"{final_status_emoji} *ForVARD Downloader Report*\n\n"
+        slack_message += f"*Execution Time:* {str(total_duration).split('.')[0]}\n"
+        
+        slack_message += "*Pipeline Status:*\n"
         for pipeline, success in results.items():
-            safe_print(f"{pipeline:>10}: {'SUCCESS' if success else 'FAILED'}")
+            status_icon = "✅" if success else "❌"
+            slack_message += f"  - `{pipeline}`: {status_icon} {'SUCCESS' if success else 'FAILED'}\n"
         
+        if aggregated_stats:
+            slack_message += "\n*Aggregated Download Stats:*\n"
+            slack_message += f"  - Files Analyzed: {aggregated_stats.get('total', 0)}\n"
+            slack_message += f"  - Downloaded: {aggregated_stats.get('downloaded', 0)}\n"
+            slack_message += f"  - Already Existed: {aggregated_stats.get('existing', 0)}\n"
+            slack_message += f"  - Failed: {aggregated_stats.get('failed', 0)}\n"
+            slack_message += f"  - Processed: {aggregated_stats.get('processed', 0)}\n"
+
+        send_slack_notification(slack_message)
+
         if all(results.values()):
-            safe_print("\\nALL PIPELINES SUCCESSFULLY COMPLETED!", "PHASE")
+            safe_print("\nALL PIPELINES SUCCESSFULLY COMPLETED!", "PHASE")
             sys.exit(0)
         else:
-            safe_print("\\nSOME PIPELINES FAILED!", "PHASE")
+            safe_print("\nSOME PIPELINES FAILED!", "PHASE")
             sys.exit(1)
 
     except Exception as e:
         safe_print(f"CRITICAL ERROR: {e}", "ERROR")
         import traceback
-        traceback.print_exc()
+        error_trace = traceback.format_exc()
+        print(error_trace)
+        
+        # Send failure notification to Slack
+        end_time = datetime.now()
+        total_duration = end_time - start_time
+        failure_message = (
+            f"❌ *ForVARD Downloader CRITICAL FAILURE*\n\n"
+            f"*Execution Time before crash:* {str(total_duration).split('.')[0]}\n"
+            f"*Error:* `{e}`\n\n"
+            f"```\n{error_trace[:1000]}...\n```" # Send first 1000 chars of traceback
+        )
+        send_slack_notification(failure_message)
+        
         sys.exit(1)
 
 if __name__ == "__main__":
-    main() 
+    main()

@@ -142,15 +142,28 @@ def process_single_file_with_retry(file_path, file_date, symbol, config, max_ret
             volatility_results = {}
             
             try:
-                volatility_results['rv1'] = realized_variance(df, resample_freq='1T', price_col='price', 
+                volatility_results['rv1'] = realized_power_variation(df, exp = 2, resample_freq='1T', price_col='price', 
                               resampling_method='last', calculate_subsample=False, n_subsamples=5)
                 
-                rv5_result = realized_variance(df, resample_freq='5T', price_col='price', 
+                rv5_result = realized_power_variation(df, exp = 2, resample_freq='5T', price_col='price', 
                               resampling_method='last', calculate_subsample=True, n_subsamples=5)
                 volatility_results['rv5'] = rv5_result[0] if isinstance(rv5_result, tuple) else rv5_result
                 volatility_results['rv5_ss'] = rv5_result[1] if isinstance(rv5_result, tuple) else None
             except Exception:
                 volatility_results.update({'rv1': None, 'rv5': None, 'rv5_ss': None})
+            # Quarticity
+            try:
+                volatility_results['rq1'] = realized_power_variation(df, exp= 4, resample_freq='1T', price_col='price', 
+                              resampling_method='last', calculate_subsample=False, n_subsamples=5)
+           
+                rq5_result = realized_power_variation(df, exp=4, resample_freq='5T', price_col='price', 
+                              resampling_method='last', calculate_subsample=True, n_subsamples=5)
+                
+                volatility_results['rq5'] = rq5_result[0] if isinstance(rq5_result, tuple) else rq5_result
+                volatility_results['rq5_ss'] = rq5_result[1] if isinstance(rq5_result, tuple) else None
+               
+            except Exception:
+                volatility_results.update({'rq1': None, 'rq5': None, 'rq5_ss': None})
             
             try:
                 volatility_results['bv1'] = bipower_variation(df, resample_freq='1T', price_col='price', 

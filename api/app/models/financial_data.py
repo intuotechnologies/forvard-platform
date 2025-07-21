@@ -77,7 +77,7 @@ class DownloadResponse(BaseModel):
     """Model for download response"""
     download_url: str
     file_name: str
-    expires_at: str
+    expires_at: str 
 
 
 class CovarianceDataPoint(BaseModel):
