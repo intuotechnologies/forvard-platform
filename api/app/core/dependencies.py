@@ -76,14 +76,14 @@ async def get_user_access_limits(
     Returns empty dict if asset_access_limits table doesn't exist (new permission system).
     """
     try:
-    query = text("""
-        SELECT asset_category, max_items 
-        FROM asset_access_limits
-        WHERE role_id = :role_id
-    """)
-    
-    results = db.execute(query, {"role_id": current_user.role_id}).fetchall()
-    return {row.asset_category: row.max_items for row in results}
+        query = text("""
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = :role_id
+        """)
+        
+        results = db.execute(query, {"role_id": current_user.role_id}).fetchall()
+        return {row.asset_category: row.max_items for row in results}
     except Exception as e:
         # If table doesn't exist or query fails, assume new permission system
         logger.info(f"asset_access_limits table not found, using new permission system: {e}")
