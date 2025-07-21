@@ -10,7 +10,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from .core.logging import setup_logging
 from .core.database import check_db_connection
 from .core.exceptions import setup_exception_handlers
-from .routers import auth, financial_data
+from .routers import auth, financial_data, admin
 from .admin.panel import setup_admin
 
 # Load environment variables
@@ -89,6 +89,7 @@ async def add_process_time_header(request: Request, call_next):
 # Include routers
 app.include_router(auth.router)
 app.include_router(financial_data.router)
+app.include_router(admin.router)
 
 
 @app.get("/", include_in_schema=False)

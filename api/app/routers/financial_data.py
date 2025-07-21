@@ -13,7 +13,7 @@ import uuid
 from pathlib import Path
 
 from ..core.database import get_db, query_to_dataframe
-from ..core.dependencies import get_current_user, get_user_access_limits
+from ..core.dependencies import get_current_user, get_user_access_limits, get_user_accessible_assets
 from ..models.user import UserInDB
 from ..models.financial_data import (
     FinancialDataPoint, 
@@ -59,6 +59,46 @@ def cleanup_old_downloads():
                 logger.info(f"Removed old download file: {filename}")
             except Exception as e:
                 logger.error(f"Error removing file {filename}: {e}")
+
+
+def get_user_allowed_symbols(accessible_assets: Dict[str, List[str]], current_user: UserInDB) -> List[str]:
+    """Get all symbols the user is allowed to access"""
+    if current_user.role_name == "admin":
+        return []  # Empty list means no restrictions for admin
+    
+    # Collect all symbols from all categories the user has access to
+    allowed_symbols = []
+    for category, symbols in accessible_assets.items():
+        allowed_symbols.extend(symbols)
+    
+    return allowed_symbols
+
+
+def apply_asset_permission_filter(
+    query_parts: List[str], 
+    params: Dict[str, any], 
+    allowed_symbols: List[str], 
+    symbol_list: List[str] = None
+) -> None:
+    """Apply asset permission filtering to query"""
+    if not allowed_symbols:  # Admin case - no restrictions
+        return
+    
+    if symbol_list:
+        # Check if requested symbols are allowed
+        forbidden_symbols = [s for s in symbol_list if s not in allowed_symbols]
+        if forbidden_symbols:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Access denied to symbols: {', '.join(forbidden_symbols)}"
+            )
+    else:
+        # Restrict to allowed symbols only
+        if allowed_symbols:
+            symbol_placeholders = ', '.join(f':allowed_symbol{i}' for i in range(len(allowed_symbols)))
+            query_parts.append(f" AND symbol IN ({symbol_placeholders})")
+            for i, symbol in enumerate(allowed_symbols):
+                params[f'allowed_symbol{i}'] = symbol
 
 
 def count_unique_assets(
@@ -159,6 +199,7 @@ async def get_financial_data(
     db: Session = Depends(get_db),
     current_user: UserInDB = Depends(get_current_user),
     access_limits: Dict[str, int] = Depends(get_user_access_limits),
+    accessible_assets: Dict[str, List[str]] = Depends(get_user_accessible_assets),
     symbol: Optional[str] = None,
     symbols: Optional[List[str]] = Query(None),
     asset_type: Optional[str] = None,
@@ -185,6 +226,9 @@ async def get_financial_data(
         symbol_list = [symbol]
     elif symbols:
         symbol_list = symbols
+    
+    # Get allowed symbols for this user
+    allowed_symbols = get_user_allowed_symbols(accessible_assets, current_user)
     
     # Apply access limits
     effective_limit = apply_access_limits(
@@ -228,39 +272,43 @@ async def get_financial_data(
     
     # Construct the SELECT part of the query
     select_clause = ", ".join(fields_to_select)
-    query = f"SELECT {select_clause} FROM realized_volatility_data WHERE 1=1"
+    query_parts = [f"SELECT {select_clause} FROM realized_volatility_data WHERE 1=1"]
     
     # Build where clause and params
     params = {}
     
+    # Apply asset permission filtering FIRST
+    apply_asset_permission_filter(query_parts, params, allowed_symbols, symbol_list)
+    
     if symbol_list:
         # Fix for SQLite IN operator - use parameter expansion
         symbol_placeholders = ', '.join(f':symbol{i}' for i in range(len(symbol_list)))
-        query += f" AND symbol IN ({symbol_placeholders})"
+        query_parts.append(f" AND symbol IN ({symbol_placeholders})")
         for i, sym in enumerate(symbol_list):
             params[f'symbol{i}'] = sym
     
     if asset_type:
         # Apply asset type mapping
         normalized_type = ASSET_TYPE_MAPPING.get(asset_type.lower(), asset_type)
-        query += " AND asset_type = :asset_type"
+        query_parts.append(" AND asset_type = :asset_type")
         params["asset_type"] = normalized_type
     
     if start_date:
-        query += " AND observation_date >= :start_date"
+        query_parts.append(" AND observation_date >= :start_date")
         params["start_date"] = start_date
     
     if end_date:
-        query += " AND observation_date <= :end_date"
+        query_parts.append(" AND observation_date <= :end_date")
         params["end_date"] = end_date
     
+    query = " ".join(query_parts)
+    
     # Get total count for pagination
-    # The count_query should not depend on the selected fields for correctness, only on WHERE clauses
-    count_select_clause = "SELECT COUNT(*)"
-    # Rebuild count_query from the ground up to avoid issues with field list in main query
-    count_query_parts = ["FROM realized_volatility_data WHERE 1=1"]
-
+    count_query_parts = ["SELECT COUNT(*) FROM realized_volatility_data WHERE 1=1"]
     params_for_count = {}
+    
+    # Apply asset permission filtering for count
+    apply_asset_permission_filter(count_query_parts, params_for_count, allowed_symbols, symbol_list)
     
     # Re-apply filters for count query (must be consistent with main query)
     if symbol_list:
@@ -282,7 +330,7 @@ async def get_financial_data(
         count_query_parts.append(" AND observation_date <= :end_date_count")
         params_for_count["end_date_count"] = end_date
 
-    count_query = f"{count_select_clause} {' '.join(count_query_parts)}"
+    count_query = " ".join(count_query_parts)
     
     total_count = 0
     try:
@@ -345,7 +393,8 @@ async def get_financial_data(
 async def get_access_limits(
     db: Session = Depends(get_db),
     current_user: UserInDB = Depends(get_current_user),
-    access_limits: Dict[str, int] = Depends(get_user_access_limits)
+    access_limits: Dict[str, int] = Depends(get_user_access_limits),
+    accessible_assets: Dict[str, List[str]] = Depends(get_user_accessible_assets)
 ):
     """
     Get current user's access limits and usage
@@ -372,12 +421,24 @@ async def get_access_limits(
         )
     
     try:
-        # Get count of available assets by type
-        available_query = """
-            SELECT asset_type, COUNT(DISTINCT symbol) as count
-            FROM realized_volatility_data
-            GROUP BY asset_type
-        """
+        # Get count of allowed assets by type for this user
+        allowed_symbols = get_user_allowed_symbols(accessible_assets, current_user)
+        
+        if allowed_symbols:
+            # Count available data by type, restricted to user's allowed symbols
+            available_query = f"""
+                SELECT asset_type, COUNT(DISTINCT symbol) as count
+                FROM realized_volatility_data
+                WHERE symbol IN ({', '.join(f"'{s}'" for s in allowed_symbols)})
+                GROUP BY asset_type
+            """
+        else:
+            # For admin: count all available data
+            available_query = """
+                SELECT asset_type, COUNT(DISTINCT symbol) as count
+                FROM realized_volatility_data
+                GROUP BY asset_type
+            """
         
         available_results = db.execute(text(available_query)).fetchall()
         total_available = {}
@@ -389,7 +450,7 @@ async def get_access_limits(
             else:
                 total_available[normalized_type] = row.count
         
-        # Calculate used and remaining
+        # Calculate used and remaining - using same restrictions
         used = count_unique_assets(db, str(current_user.user_id))
     except SQLAlchemyError as e:
         # Rollback the transaction to prevent "aborted transaction" errors
@@ -398,6 +459,7 @@ async def get_access_limits(
         # Return default values on error
         total_available = {}
         used = {}
+    
     normalized_used = {}
     for asset_type, count in used.items():
         normalized_type = ASSET_TYPE_MAPPING.get(asset_type.lower(), asset_type)
@@ -429,6 +491,7 @@ async def download_financial_data(
     db: Session = Depends(get_db),
     current_user: UserInDB = Depends(get_current_user),
     access_limits: Dict[str, int] = Depends(get_user_access_limits),
+    accessible_assets: Dict[str, List[str]] = Depends(get_user_accessible_assets),
     symbol: Optional[str] = None,
     symbols: Optional[List[str]] = Query(None),
     asset_type: Optional[str] = None,
@@ -455,6 +518,9 @@ async def download_financial_data(
     elif symbols:
         symbol_list = symbols
     
+    # Get allowed symbols for this user
+    allowed_symbols = get_user_allowed_symbols(accessible_assets, current_user)
+    
     # Apply access limits with strict enforcement for downloads
     try:
         # Check for too many symbols explicitly for the test case
@@ -474,12 +540,12 @@ async def download_financial_data(
         raise e
     
     # Build query
-    query = """
+    query_parts = ["""
         SELECT 
             observation_date, symbol, asset_type, 
             volume, trades, open_price, close_price, 
             high_price, low_price
-    """
+    """]
     
     # Add all available volatility metrics
     volatility_fields = [
@@ -495,41 +561,46 @@ async def download_financial_data(
         volatility_fields = [f for f in fields if f in valid_fields]
     
     # Add fields to query
-    query += f", {', '.join(volatility_fields)}"
+    query_parts[0] += f", {', '.join(volatility_fields)}"
     
     # Complete query
-    query += " FROM realized_volatility_data WHERE 1=1"
+    query_parts.append(" FROM realized_volatility_data WHERE 1=1")
     
     # Build where clause
     params = {}
     
+    # Apply asset permission filtering FIRST
+    apply_asset_permission_filter(query_parts, params, allowed_symbols, symbol_list)
+    
     if symbol_list:
         # Fix for SQLite IN operator - use parameter expansion
         symbol_placeholders = ', '.join(f':symbol{i}' for i in range(len(symbol_list)))
-        query += f" AND symbol IN ({symbol_placeholders})"
+        query_parts.append(f" AND symbol IN ({symbol_placeholders})")
         for i, sym in enumerate(symbol_list):
             params[f'symbol{i}'] = sym
     
     if asset_type:
         # Apply asset type mapping
         normalized_type = ASSET_TYPE_MAPPING.get(asset_type.lower(), asset_type)
-        query += " AND asset_type = :asset_type"
+        query_parts.append(" AND asset_type = :asset_type")
         params["asset_type"] = normalized_type
     
     if start_date:
-        query += " AND observation_date >= :start_date"
+        query_parts.append(" AND observation_date >= :start_date")
         params["start_date"] = start_date
     
     if end_date:
-        query += " AND observation_date <= :end_date"
+        query_parts.append(" AND observation_date <= :end_date")
         params["end_date"] = end_date
     
     # Order by date and symbol
-    query += " ORDER BY observation_date DESC, symbol"
+    query_parts.append(" ORDER BY observation_date DESC, symbol")
     
     # Apply limit based on role
     if effective_limit:
-        query += f" LIMIT {effective_limit}"
+        query_parts.append(f" LIMIT {effective_limit}")
+    
+    query = " ".join(query_parts)
     
     try:
         # Convert query to pandas dataframe
@@ -618,6 +689,7 @@ async def get_covariance_data(
     db: Session = Depends(get_db),
     current_user: UserInDB = Depends(get_current_user),
     access_limits: Dict[str, int] = Depends(get_user_access_limits),
+    accessible_assets: Dict[str, List[str]] = Depends(get_user_accessible_assets),
     asset1_symbol: Optional[str] = None,
     asset2_symbol: Optional[str] = None,
     symbols: Optional[List[str]] = Query(None),
@@ -637,6 +709,30 @@ async def get_covariance_data(
         filters={"asset1_symbol": asset1_symbol, "asset2_symbol": asset2_symbol, 
                 "symbols": symbols, "start_date": start_date, "end_date": end_date}
     )
+    
+    # Get allowed symbols for this user
+    allowed_symbols = get_user_allowed_symbols(accessible_assets, current_user)
+    
+    # Validate symbol permissions
+    if asset1_symbol and allowed_symbols and asset1_symbol not in allowed_symbols:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Access denied to symbol: {asset1_symbol}"
+        )
+    
+    if asset2_symbol and allowed_symbols and asset2_symbol not in allowed_symbols:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Access denied to symbol: {asset2_symbol}"
+        )
+    
+    if symbols and allowed_symbols:
+        forbidden_symbols = [s for s in symbols if s not in allowed_symbols]
+        if forbidden_symbols:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Access denied to symbols: {', '.join(forbidden_symbols)}"
+            )
     
     # Define core fields that are always selected
     core_fields = [
@@ -665,59 +761,77 @@ async def get_covariance_data(
     
     # Construct the SELECT part of the query
     select_clause = ", ".join(fields_to_select)
-    query = f"SELECT {select_clause} FROM realized_covariance_data WHERE 1=1"
+    query_parts = [f"SELECT {select_clause} FROM realized_covariance_data WHERE 1=1"]
     
     # Build where clause and params
     params = {}
     
+    # Apply asset permission filtering for covariance data
+    if allowed_symbols:  # Non-admin users
+        symbol_placeholders = ', '.join(f':allowed_cov_symbol{i}' for i in range(len(allowed_symbols)))
+        query_parts.append(f" AND (asset1_symbol IN ({symbol_placeholders}) AND asset2_symbol IN ({symbol_placeholders}))")
+        for i, symbol in enumerate(allowed_symbols):
+            params[f'allowed_cov_symbol{i}'] = symbol
+    
     if asset1_symbol:
-        query += " AND asset1_symbol = :asset1_symbol"
+        query_parts.append(" AND asset1_symbol = :asset1_symbol")
         params["asset1_symbol"] = asset1_symbol
     
     if asset2_symbol:
-        query += " AND asset2_symbol = :asset2_symbol"
+        query_parts.append(" AND asset2_symbol = :asset2_symbol")
         params["asset2_symbol"] = asset2_symbol
     
     if symbols:
         # Filter for pairs where both symbols are in the provided list
         symbol_placeholders = ', '.join(f':symbol{i}' for i in range(len(symbols)))
-        query += f" AND (asset1_symbol IN ({symbol_placeholders}) OR asset2_symbol IN ({symbol_placeholders}))"
+        query_parts.append(f" AND (asset1_symbol IN ({symbol_placeholders}) OR asset2_symbol IN ({symbol_placeholders}))")
         for i, sym in enumerate(symbols):
             params[f'symbol{i}'] = sym
     
     if start_date:
-        query += " AND observation_date >= :start_date"
+        query_parts.append(" AND observation_date >= :start_date")
         params["start_date"] = start_date
     
     if end_date:
-        query += " AND observation_date <= :end_date"
+        query_parts.append(" AND observation_date <= :end_date")
         params["end_date"] = end_date
     
+    query = " ".join(query_parts)
+    
     # Get total count for pagination
-    count_query = "SELECT COUNT(*) FROM realized_covariance_data WHERE 1=1"
+    count_query_parts = ["SELECT COUNT(*) FROM realized_covariance_data WHERE 1=1"]
     count_params = {}
     
+    # Apply same filtering for count
+    if allowed_symbols:  # Non-admin users
+        symbol_placeholders = ', '.join(f':allowed_cov_count_symbol{i}' for i in range(len(allowed_symbols)))
+        count_query_parts.append(f" AND (asset1_symbol IN ({symbol_placeholders}) AND asset2_symbol IN ({symbol_placeholders}))")
+        for i, symbol in enumerate(allowed_symbols):
+            count_params[f'allowed_cov_count_symbol{i}'] = symbol
+    
     if asset1_symbol:
-        count_query += " AND asset1_symbol = :asset1_symbol"
+        count_query_parts.append(" AND asset1_symbol = :asset1_symbol")
         count_params["asset1_symbol"] = asset1_symbol
     
     if asset2_symbol:
-        count_query += " AND asset2_symbol = :asset2_symbol"
+        count_query_parts.append(" AND asset2_symbol = :asset2_symbol")
         count_params["asset2_symbol"] = asset2_symbol
     
     if symbols:
         symbol_placeholders = ', '.join(f':symbol{i}' for i in range(len(symbols)))
-        count_query += f" AND (asset1_symbol IN ({symbol_placeholders}) OR asset2_symbol IN ({symbol_placeholders}))"
+        count_query_parts.append(f" AND (asset1_symbol IN ({symbol_placeholders}) OR asset2_symbol IN ({symbol_placeholders}))")
         for i, sym in enumerate(symbols):
             count_params[f'symbol{i}'] = sym
     
     if start_date:
-        count_query += " AND observation_date >= :start_date"
+        count_query_parts.append(" AND observation_date >= :start_date")
         count_params["start_date"] = start_date
     
     if end_date:
-        count_query += " AND observation_date <= :end_date"
+        count_query_parts.append(" AND observation_date <= :end_date")
         count_params["end_date"] = end_date
+    
+    count_query = " ".join(count_query_parts)
     
     try:
         # Get total count
@@ -767,6 +881,7 @@ async def download_covariance_data(
     db: Session = Depends(get_db),
     current_user: UserInDB = Depends(get_current_user),
     access_limits: Dict[str, int] = Depends(get_user_access_limits),
+    accessible_assets: Dict[str, List[str]] = Depends(get_user_accessible_assets),
     asset1_symbol: Optional[str] = None,
     asset2_symbol: Optional[str] = None,
     symbols: Optional[List[str]] = Query(None),
@@ -782,6 +897,30 @@ async def download_covariance_data(
         user_id=str(current_user.user_id),
         role=current_user.role_name
     )
+    
+    # Get allowed symbols for this user
+    allowed_symbols = get_user_allowed_symbols(accessible_assets, current_user)
+    
+    # Validate symbol permissions
+    if asset1_symbol and allowed_symbols and asset1_symbol not in allowed_symbols:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Access denied to symbol: {asset1_symbol}"
+        )
+    
+    if asset2_symbol and allowed_symbols and asset2_symbol not in allowed_symbols:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Access denied to symbol: {asset2_symbol}"
+        )
+    
+    if symbols and allowed_symbols:
+        forbidden_symbols = [s for s in symbols if s not in allowed_symbols]
+        if forbidden_symbols:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Access denied to symbols: {', '.join(forbidden_symbols)}"
+            )
     
     # Define core fields that are always selected
     core_fields = [
@@ -813,35 +952,44 @@ async def download_covariance_data(
     
     # Construct the SELECT part of the query
     select_clause = ", ".join(fields_to_select)
-    query = f"SELECT {select_clause} FROM realized_covariance_data WHERE 1=1"
+    query_parts = [f"SELECT {select_clause} FROM realized_covariance_data WHERE 1=1"]
     
     # Build where clause and params
     params = {}
     
+    # Apply asset permission filtering
+    if allowed_symbols:  # Non-admin users
+        symbol_placeholders = ', '.join(f':allowed_cov_dl_symbol{i}' for i in range(len(allowed_symbols)))
+        query_parts.append(f" AND (asset1_symbol IN ({symbol_placeholders}) AND asset2_symbol IN ({symbol_placeholders}))")
+        for i, symbol in enumerate(allowed_symbols):
+            params[f'allowed_cov_dl_symbol{i}'] = symbol
+    
     if asset1_symbol:
-        query += " AND asset1_symbol = :asset1_symbol"
+        query_parts.append(" AND asset1_symbol = :asset1_symbol")
         params["asset1_symbol"] = asset1_symbol
     
     if asset2_symbol:
-        query += " AND asset2_symbol = :asset2_symbol"
+        query_parts.append(" AND asset2_symbol = :asset2_symbol")
         params["asset2_symbol"] = asset2_symbol
     
     if symbols:
         symbol_placeholders = ', '.join(f':symbol{i}' for i in range(len(symbols)))
-        query += f" AND (asset1_symbol IN ({symbol_placeholders}) OR asset2_symbol IN ({symbol_placeholders}))"
+        query_parts.append(f" AND (asset1_symbol IN ({symbol_placeholders}) OR asset2_symbol IN ({symbol_placeholders}))")
         for i, sym in enumerate(symbols):
             params[f'symbol{i}'] = sym
     
     if start_date:
-        query += " AND observation_date >= :start_date"
+        query_parts.append(" AND observation_date >= :start_date")
         params["start_date"] = start_date
     
     if end_date:
-        query += " AND observation_date <= :end_date"
+        query_parts.append(" AND observation_date <= :end_date")
         params["end_date"] = end_date
     
     # Add ordering
-    query += " ORDER BY observation_date DESC, asset1_symbol, asset2_symbol"
+    query_parts.append(" ORDER BY observation_date DESC, asset1_symbol, asset2_symbol")
+    
+    query = " ".join(query_parts)
     
     try:
         # Convert query to pandas dataframe
@@ -887,4 +1035,4 @@ async def download_covariance_data(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error generating covariance download"
-    ) 
+        ) 
