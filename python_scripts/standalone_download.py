@@ -81,7 +81,7 @@ def safe_print(message, log_type=None):
             print(message)
             logging.info(message)
 
-# --- Slack Notification Function (NEW) ---
+# --- Slack Notification Function ---
 def send_slack_notification(message_text):
     """
     Sends a notification message to a configured Slack channel.
@@ -108,7 +108,7 @@ def send_slack_notification(message_text):
 
     try:
         response = requests.post(url, headers=headers, json=payload, timeout=30)
-        response.raise_for_status()  # Lancia un'eccezione per risposte HTTP 4xx/5xx
+        response.raise_for_status()
         
         response_json = response.json()
         if response_json.get("ok"):
@@ -120,7 +120,6 @@ def send_slack_notification(message_text):
         safe_print(f"Errore di rete durante l'invio della notifica a Slack: {e}", "ERROR")
     except Exception as e:
         safe_print(f"Errore imprevisto durante l'invio a Slack: {e}", "ERROR")
-
 
 # Logger configuration
 logger = logging.getLogger("KibotDownloader")
@@ -459,11 +458,11 @@ class KibotAPI:
                 return "session_expired"
             
             try:
-                df = pd.read_csv(BytesIO(response.content), sep='\\t')
+                df = pd.read_csv(BytesIO(response.content), sep='\t')
                 if df.empty: return "empty_data"
                 path = PathManager.get_adjustment_filepath(self.config.base_dir, symbol, self.config.asset_type)
                 PathManager.ensure_directory_exists(path)
-                df.to_csv(path, sep='\\t', index=False)
+                df.to_csv(path, sep='\t', index=False)
                 return "success"
             except Exception as parse_error:
                 logger.error(f"Error during analysis of adjustment data for {symbol}: {parse_error}")
@@ -717,7 +716,7 @@ class KibotDownloader:
             )
             PathManager.ensure_directory_exists(path)
             with open(path, 'a') as f:
-                f.write(f"{log_date}, {start_date}, {end_date}\\n")
+                f.write(f"{log_date}, {start_date}, {end_date}\n")
     
     def collect_existing_files(self):
         logger.info("Gathering information on existing files...")
@@ -956,7 +955,7 @@ class KibotDownloader:
             if total_items == 0:
                 logger.info("No new data to download. All files are already existing.")
                 if self.config.download_adjustments: self.download_adjustments()
-                return True, self.stats
+                return True
             
             logger.info(f"Downloading {total_items} file for {len(self.config.symbols)} symbols...")
             
@@ -997,7 +996,6 @@ class KibotDownloader:
                 logger.info("Download adjustment data completed")
             
             total_time = time.time() - start_time
-            self.stats['total_time'] = total_time
             total_time_str = time.strftime("%H:%M:%S", time.gmtime(total_time))
             
             # Replaced multiline f-string with individual log entries for better formatting
@@ -1020,10 +1018,10 @@ class KibotDownloader:
             logger.info("==============================")
 
             if self.config.generate_detailed_report: self._generate_detailed_report()
-            return True, self.stats
+            return True
         except Exception as e:
             logger.error(f"Errore durante il download: {e}", exc_info=True)
-            return False, self.stats
+            return False
         finally:
             self.processing_done.set()
             self.http_client.close_all()
@@ -1131,74 +1129,84 @@ def load_config():
 
     # The entire configuration is now a Python dictionary
     config = {
-      "credentials": {
+    "credentials": {
         "kibot_user": kibot_user,
         "kibot_password": kibot_password
-      },
-      "general": {
-        "base_dir": f"{base_dir}/data", 
+    },
+    "general": {
+        "base_dir": f"{base_dir}/data",
         "file_format": "parquet",
-        # "early_closing_day_file" is removed as it's not used by the downloader
         "execution_mode": "async",
         "system_cores_reserved": 1,
-        "download_threads_reserved": 4, 
+        "download_threads_reserved": 4,
         "processing_threads_reserved": 4,
         "outliers_threads_max": 8,
         "rv_threads_max": 8
-      },
-      "pipelines": {
-       "stocks_batch1": {
-          "enabled": False,
-          "asset_type": "stocks",
-          "symbols": ["GE", "JNJ"], # Directly embedded
-          "date_range": {
-            "start_date": "03/01/2024",
-            "end_date": "03/01/2025"
-          },
-          "steps": ["download", "outliers", "realized_variance"]
-        },
-        "stocks_batch2": {
-          "enabled": False,
-          "asset_type": "stocks",
-          "symbols": [], # Assumed empty as file was not provided
-          "date_range": {
-            "start_date": "03/01/2024",
-            "end_date": "03/01/2025"
-          },
-          "steps": ["download", "outliers", "realized_variance"]
+    },
+    "pipelines": {
+        "stocks_batch1": {
+            "enabled": False,
+            "asset_type": "stocks",
+            "symbols": [
+                "MDT", "AAPL", "ADBE", "AMD", "AMZN", "AXP", "BA", "CAT", "COIN", "CSCO", "DIS", "EBAY",
+                "GE", "GOOGL", "GS", "HD", "IBM", "INTC", "JNJ", "JPM", "KO", "MCD", "META", "MMM",
+                "MSFT", "NFLX", "NKE", "NVDA", "ORCL", "PG", "PM", "PYPL", "SHOP", "SNAP", "SPOT", "TSLA",
+                "UBER", "V", "WMT", "XOM", "ZM", "ABBV", "ABT", "ACN", "AIG", "AMGN", "AMT", "AVGO", "BAC",
+                "BK", "BKNG", "BLK", "BMY", "BRK.B", "C", "CHTR", "CL", "CMCSA", "COF", "COP", "COST",
+                "CRM", "CVS", "CVX", "DE", "DHR", "DOW", "DUK", "EMR", "F", "FDX", "GD", "GILD", "GM",
+                "GOOG", "HON", "INTU", "KHC", "LIN", "LLY", "LMT", "LOW", "MA", "MDLZ", "MET", "MO", "MRK",
+                "MS", "NEE", "PEP", "PFE", "QCOM", "RTX", "SBUX", "SCHW", "SO", "SPG", "T", "TGT", "TMO",
+                "TMUS", "TXN", "UNH", "UNP", "UPS", "USB", "VZ", "WFC"
+            ],
+            "date_range": {
+                "start_date": "01/01/2015",
+                "end_date": "07/17/2025"
+            },
+            "steps": ["download", "outliers", "realized_variance"]
         },
         "ETFs": {
-          "enabled": True,
-          "asset_type": "ETFs",
-          "symbols": ["AGG", "BND", "GLD", "SLV", "SUSA"], # Empty as per user
-          "date_range": {
-            "start_date": "03/01/2024",
-            "end_date": "03/01/2025"
-          },
-          "steps": ["download", "outliers", "realized_variance"]
+            "enabled": True,
+            "asset_type": "ETFs",
+            "symbols": [
+                "AGG", "BND", "GLD", "SLV", "SUSA", "EFIV", "ESGV", "ESGU", "AFTY", "MCHI", "EWH", "EEM",
+                "IEUR", "VGK", "FLCH", "EWJ", "NKY", "EWZ", "EWC", "EWU", "EWI", "EWP", "ACWI", "IOO", "GWL",
+                "VEU", "IJH", "MDY", "IVOO", "IYT", "XTN", "XLI", "XLU", "VPU", "SPSM", "IJR", "VIOO", "QQQ",
+                "ICLN", "ARKK", "SPLG", "SPY", "VOO", "IYY", "VTI", "DIA"
+            ],
+            "date_range": {
+                "start_date": "01/01/2015",
+                "end_date": "07/17/2025"
+            },
+            "steps": ["download", "outliers", "realized_variance"]
         },
         "forex": {
-          "enabled": True,
-          "asset_type": "forex", 
-          "symbols": ["EURUSD", "JPYUSD"], # Directly embedded
-          "date_range": {
-            "start_date": "03/01/2024",
-            "end_date": "03/01/2025"
-          },
-          "steps": ["download", "realized_variance"]
+            "enabled": True,
+            "asset_type": "forex",
+            "symbols": [
+                "EURUSD", "GBPUSD", "AUDUSD", "CADUSD", "JPYUSD", "CHFUSD",
+                "SGDUSD", "HKDUSD", "KRWUSD", "INRUSD", "RUBUSD", "BRLUSD"
+            ],
+            "date_range": {
+                "start_date": "01/01/2015",
+                "end_date": "07/17/2025"
+            },
+            "steps": ["download", "realized_variance"]
         },
         "futures": {
-          "enabled": True,
-          "asset_type": "futures",
-          "symbols": ["CL", "GC"], # Directly embedded
-          "date_range": {
-            "start_date": "03/01/2024", 
-            "end_date": "03/01/2025"
-          },
-          "steps": ["download", "realized_variance"]
+            "enabled": True,
+            "asset_type": "futures",
+            "symbols": [
+                "ES", "CL", "GC", "NG", "NQ", "TY", "FV", "EU", "SI", "C", "W", "VX"
+            ],
+            "date_range": {
+                "start_date": "01/01/2015",
+                "end_date": "07/17/2025"
+            },
+            "steps": ["download", "realized_variance"]
         }
-      }
     }
+    }
+
             
     return config
 
@@ -1237,7 +1245,7 @@ def download_worker(config_data, pipeline_name, symbols_batch, result_queue):
 
     if not symbols_to_download:
         safe_print(f"No new symbols to download for {pipeline_name}, all already processed", "INFO")
-        result_queue.put({'pipeline': pipeline_name, 'symbols': symbols_batch, 'status': True, 'asset_type': asset_type, 'stats': {}})
+        result_queue.put({'pipeline': pipeline_name, 'symbols': symbols_batch, 'status': True, 'asset_type': asset_type})
         return True
     
     safe_print(f"Batch download of {len(symbols_to_download)}/{len(symbols_batch)} symbols for {pipeline_name}", "DOWNLOAD")
@@ -1256,9 +1264,15 @@ def download_worker(config_data, pipeline_name, symbols_batch, result_queue):
                 file_format=config_data['general']['file_format']
             )
             downloader = KibotDownloader(download_config)
-            # MODIFIED: Capture stats from the run
-            success, stats = downloader.run()
-            result_queue.put({'pipeline': pipeline_name, 'symbols': symbols_batch, 'status': success, 'asset_type': asset_type, 'stats': stats})
+            success = downloader.run()
+            
+            # Return detailed stats
+            stats_snapshot = downloader.stats.copy()
+            stats_snapshot['pipeline'] = pipeline_name
+            stats_snapshot['symbols_in_batch'] = len(symbols_batch)
+            stats_snapshot['symbols_processed'] = len(symbols_to_download)
+            
+            result_queue.put({'pipeline': pipeline_name, 'symbols': symbols_batch, 'status': success, 'asset_type': asset_type, 'stats': stats_snapshot})
             safe_print(f"Download completed batch of {len(symbols_to_download)} symbols for {pipeline_name}", "COMPLETE")
             return success
         except Exception as e:
@@ -1266,10 +1280,9 @@ def download_worker(config_data, pipeline_name, symbols_batch, result_queue):
             for s in symbols_to_download:
                 mark_symbol_as_downloaded(s, date_range['start_date'], asset_type, False)
                 mark_symbol_as_downloaded(s, date_range['end_date'], asset_type, False)
-            result_queue.put({'pipeline': pipeline_name, 'symbols': symbols_batch, 'status': False, 'asset_type': asset_type, 'stats': {}})
             return False
 
-# --- Main execution block (MODIFIED) ---
+# --- Main execution block ---
 def main():
     parser = argparse.ArgumentParser(description='Standalone Data Downloader for ForVARD Project')
     parser.add_argument('--pipelines', nargs='+', help='Pipelines to run (e.g., stocks forex futures)')
@@ -1292,14 +1305,10 @@ def main():
         
         if not pipelines_to_run:
             safe_print("No pipeline to run. Check configuration.", "ERROR")
-            sys.exit(1)
         
         safe_print(f"Pipelines to execute: {pipelines_to_run}", "INFO")
         
         results = {}
-        all_stats = []
-        total_batches = 0
-
         for pipeline_name in pipelines_to_run:
             if pipeline_name not in config['pipelines'] or not config['pipelines'][pipeline_name].get('enabled', True):
                 safe_print(f"Pipeline '{pipeline_name}' disabled or not found. Skipping.", "INFO")
@@ -1312,11 +1321,6 @@ def main():
             clean_kibot_logger()
             
             all_symbols = pipeline_config['symbols']
-            if not all_symbols:
-                safe_print(f"No symbols defined for pipeline '{pipeline_name}'. Skipping.", "INFO")
-                results[pipeline_name] = True # Consider it a success if there's nothing to do
-                continue
-
             batch_size = max(15, len(all_symbols) // (os.cpu_count() or 4)) if len(all_symbols) >= 50 else \
                          max(10, len(all_symbols) // 3) if len(all_symbols) >= 20 else \
                          max(5, len(all_symbols) // 2) if len(all_symbols) > 10 else len(all_symbols)
@@ -1325,81 +1329,96 @@ def main():
             symbol_batches = [all_symbols[i:i+batch_size] for i in range(0, len(all_symbols), batch_size)]
             
             result_queue = queue.Queue()
+            all_stats = []
             
             with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
                 futures = [executor.submit(download_worker, config, pipeline_name, batch, result_queue) for batch in symbol_batches]
                 
-                # Wait for all futures to complete
-                concurrent.futures.wait(futures)
-                
-                # Check results
+                # Collect results as they complete
+                for future in concurrent.futures.as_completed(futures):
+                    # This part ensures we wait for all workers to finish
+                    # but the main logic for collecting stats is from the queue
+                    pass
+
                 pipeline_success = all(f.result() for f in futures)
                 results[pipeline_name] = pipeline_success
 
-                # Collect stats from the queue
-                while not result_queue.empty():
-                    result_item = result_queue.get()
-                    if result_item.get('stats'):
-                        all_stats.append(result_item['stats'])
-
-        # --- FINAL SUMMARY AND SLACK NOTIFICATION ---
+            # Drain the queue to get all stats
+            while not result_queue.empty():
+                try:
+                    all_stats.append(result_queue.get_nowait())
+                except queue.Empty:
+                    break
+        
         end_time = datetime.now()
-        total_duration = end_time - start_time
+        duration = end_time - start_time
+
         safe_print("FINAL SUMMARY", "PHASE")
-        safe_print(f"Total time: {total_duration}")
+        safe_print(f"Total time: {duration}")
         
-        # Aggregate stats from all runs
-        aggregated_stats = defaultdict(int)
-        for stat_dict in all_stats:
-            for key, value in stat_dict.items():
-                if key != 'total_time':
-                    aggregated_stats[key] += value
-
-        # Build Slack message
-        final_status_emoji = "✅" if all(results.values()) else "⚠️"
-        slack_message = f"{final_status_emoji} *ForVARD Downloader Report*\n\n"
-        slack_message += f"*Execution Time:* {str(total_duration).split('.')[0]}\n"
-        
-        slack_message += "*Pipeline Status:*\n"
         for pipeline, success in results.items():
-            status_icon = "✅" if success else "❌"
-            slack_message += f"  - `{pipeline}`: {status_icon} {'SUCCESS' if success else 'FAILED'}\n"
+            safe_print(f"{pipeline:>10}: {'SUCCESS' if success else 'FAILED'}")
         
-        if aggregated_stats:
-            slack_message += "\n*Aggregated Download Stats:*\n"
-            slack_message += f"  - Files Analyzed: {aggregated_stats.get('total', 0)}\n"
-            slack_message += f"  - Downloaded: {aggregated_stats.get('downloaded', 0)}\n"
-            slack_message += f"  - Already Existed: {aggregated_stats.get('existing', 0)}\n"
-            slack_message += f"  - Failed: {aggregated_stats.get('failed', 0)}\n"
-            slack_message += f"  - Processed: {aggregated_stats.get('processed', 0)}\n"
-
-        send_slack_notification(slack_message)
-
+        # --- SLACK NOTIFICATION ---
+        successful_pipelines = sum(1 for success in results.values() if success)
+        failed_pipelines = len(results) - successful_pipelines
+        
         if all(results.values()):
             safe_print("\nALL PIPELINES SUCCESSFULLY COMPLETED!", "PHASE")
-            sys.exit(0)
+            status_emoji = "✅"
+            status_text = "SUCCESS"
         else:
             safe_print("\nSOME PIPELINES FAILED!", "PHASE")
-            sys.exit(1)
+            status_emoji = "⚠️" if failed_pipelines < successful_pipelines else "❌"
+            status_text = "PARTIAL FAILURE" if successful_pipelines > 0 else "FAILURE"
+
+        # Aggregate stats for the message
+        total_downloaded = sum(s['stats'].get('downloaded', 0) for s in all_stats)
+        total_existing = sum(s['stats'].get('existing', 0) for s in all_stats)
+        total_no_data = sum(s['stats'].get('no_data', 0) for s in all_stats)
+        total_failed = sum(s['stats'].get('failed', 0) for s in all_stats)
+        total_processed = sum(s['stats'].get('processed', 0) for s in all_stats)
+
+        message_parts = [
+            f"{status_emoji} **KIBOT DOWNLOAD COMPLETED** {status_emoji}",
+            "",
+            f"**Status:** {status_text}",
+            f"**Duration:** {str(duration).split('.')[0]}",
+            f"**Pipelines:** {successful_pipelines}/{len(results)} successful",
+            "",
+            "**Pipeline Results:**"
+        ]
+
+        for pipeline, success in results.items():
+            result_emoji = "✅" if success else "❌"
+            message_parts.append(f"{result_emoji} {pipeline}: {'SUCCESS' if success else 'FAILED'}")
+
+        message_parts.extend([
+            "",
+            "**Download Summary:**",
+            f"✅ Downloaded successfully: {total_downloaded}",
+            f"⏭️ Already existed: {total_existing}",
+            f"❓ No data on server: {total_no_data}",
+            f"❌ Total failed: {total_failed}",
+            f"💾 Files processed and saved: {total_processed}"
+        ])
+
+        message_parts.extend([
+            "",
+            f"**Timestamp:** {end_time.strftime('%Y-%m-%d %H:%M:%S')}"
+        ])
+
+        slack_message = "\n".join(message_parts)
+        
+        try:
+            send_slack_notification(slack_message)
+        except Exception as e:
+            safe_print(f"Error sending Slack notification: {e}", "WARNING")
 
     except Exception as e:
         safe_print(f"CRITICAL ERROR: {e}", "ERROR")
         import traceback
-        error_trace = traceback.format_exc()
-        print(error_trace)
-        
-        # Send failure notification to Slack
-        end_time = datetime.now()
-        total_duration = end_time - start_time
-        failure_message = (
-            f"❌ *ForVARD Downloader CRITICAL FAILURE*\n\n"
-            f"*Execution Time before crash:* {str(total_duration).split('.')[0]}\n"
-            f"*Error:* `{e}`\n\n"
-            f"```\n{error_trace[:1000]}...\n```" # Send first 1000 chars of traceback
-        )
-        send_slack_notification(failure_message)
-        
-        sys.exit(1)
+        traceback.print_exc()
 
 if __name__ == "__main__":
-    main()
+    main() 

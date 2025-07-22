@@ -37,9 +37,49 @@ import boto3
 from botocore.exceptions import ClientError, NoCredentialsError
 
 # Try to import wmill, use fallback if not available
-
+import requests
 import wmill
 WINDMILL_AVAILABLE = True
+
+# --- Slack Notification Function ---
+def send_slack_notification(message_text):
+    """
+    Sends a notification message to a configured Slack channel.
+    
+    Reads the Slack API token and Channel ID from environment variables
+    set in Windmill.
+    """
+    slack_token = wmill.get_variable("u/niccolosalvini27/SLACK_API_TOKEN")
+    slack_channel = wmill.get_variable("u/niccolosalvini27/SLACK_CHANNEL_ID")
+
+    if not slack_token or not slack_channel:
+        print("Variabili d'ambiente Slack non trovate (SLACK_API_TOKEN, SLACK_CHANNEL_ID). Notifica saltata.")
+        return
+
+    url = "https://slack.com/api/chat.postMessage"
+    headers = {
+        "Authorization": f"Bearer {slack_token}",
+        "Content-type": "application/json; charset=utf-8"
+    }
+    payload = {
+        "channel": slack_channel,
+        "text": message_text
+    }
+
+    try:
+        response = requests.post(url, headers=headers, json=payload, timeout=30)
+        response.raise_for_status()  # Lancia un'eccezione per risposte HTTP 4xx/5xx
+        
+        response_json = response.json()
+        if response_json.get("ok"):
+            print("Notifica di riepilogo inviata a Slack con successo.")
+        else:
+            print(f"Errore nell'invio a Slack: {response_json.get('error')}")
+
+    except requests.exceptions.RequestException as e:
+        print(f"Errore di rete durante l'invio della notifica a Slack: {e}")
+    except Exception as e:
+        print(f"Errore imprevisto durante l'invio a Slack: {e}")
 
 
 # ============================================================
@@ -1419,6 +1459,7 @@ def main():
         
         # Process each pipeline
         all_results = {}
+        all_rv_stats = []  # Accumulate detailed statistics
         
         for pipeline_name in pipelines_to_run:
             if pipeline_name not in config['pipelines']:
@@ -1445,6 +1486,9 @@ def main():
             # Process symbols
             results = process_all_symbols_threaded(rv_config)
             all_results[pipeline_name] = results
+            
+            # Accumulate statistics for Slack notification
+            all_rv_stats.extend(results)
         
         # Final summary
         end_time = datetime.now()
@@ -1461,13 +1505,80 @@ def main():
             status = "SUCCESS" if total_errors == 0 else "WARNING"
             logger.info(f"{pipeline_name}: {status} - {total_processed} records processed, {total_errors} errors, {success_rate:.0f}% success rate")
         
+        # Prepare Slack notification message
+        successful_pipelines = sum(1 for pipeline_name, results in all_results.items() 
+                                  if sum(r["errors"] for r in results) == 0)
+        failed_pipelines = len(all_results) - successful_pipelines
+        
+        # Calculate detailed statistics from accumulated RV results
+        total_records_processed = sum(r.get("processed", 0) for r in all_rv_stats)
+        total_records_skipped = sum(r.get("skipped", 0) for r in all_rv_stats)
+        total_records_errors = sum(r.get("errors", 0) for r in all_rv_stats)
+        total_files_analyzed = sum(r.get("total_files", 0) for r in all_rv_stats)
+        total_symbols = len(all_rv_stats)
+        
         # Determine exit code
         total_errors = sum(sum(r["errors"] for r in results) for results in all_results.values())
         if total_errors == 0:
             logger.info("ALL PIPELINES COMPLETED SUCCESSFULLY!")
-            sys.exit(0)
+            status_emoji = "✅"
+            status_text = "SUCCESS"
         else:
             logger.warning("SOME PROCESSING ERRORS OCCURRED!")
+            status_emoji = "⚠️" if failed_pipelines < successful_pipelines else "❌"
+            status_text = "PARTIAL FAILURE" if successful_pipelines > 0 else "FAILURE"
+        
+        # Create Slack message - build as list and join
+        message_parts = [
+            f"{status_emoji} **REALIZED VARIANCE COMPUTATION COMPLETED** {status_emoji}",
+            "",
+            f"**Status:** {status_text}",
+            f"**Duration:** {str(duration).split('.')[0]}",
+            f"**Pipelines:** {successful_pipelines}/{len(all_results)} successful",
+            "",
+            "**Pipeline Results:**"
+        ]
+        
+        # Add pipeline results
+        for pipeline_name, results in all_results.items():
+            total_pipeline_errors = sum(r["errors"] for r in results)
+            result_emoji = "✅" if total_pipeline_errors == 0 else "❌"
+            message_parts.append(f"{result_emoji} {pipeline_name}: {'SUCCESS' if total_pipeline_errors == 0 else 'FAILED'}")
+        
+        # Add detailed file statistics if available
+        if all_rv_stats:
+            message_parts.extend([
+                "",
+                "**Processing Summary:**",
+                f"📁 Total files analyzed: {total_files_analyzed}",
+                f"✅ Records processed: {total_records_processed}",
+                f"⏭️ Records skipped (duplicates): {total_records_skipped}",
+                f"❌ Processing errors: {total_records_errors}",
+                f"🏷️ Symbols processed: {total_symbols}"
+            ])
+            
+            if total_files_analyzed > 0:
+                success_rate = (total_records_processed / total_files_analyzed) * 100
+                message_parts.append(f"📊 Success rate: {success_rate:.1f}%")
+        
+        message_parts.extend([
+            "",
+            f"**Timestamp:** {end_time.strftime('%Y-%m-%d %H:%M:%S')}"
+        ])
+        
+        slack_message = "\n".join(message_parts)
+        
+        # Send Slack notification
+        try:
+            send_slack_notification(slack_message)
+        except Exception as e:
+            logger.warning(f"Error sending Slack notification: {e}")
+        
+        # Exit with appropriate code
+        if total_errors == 0:
+            sys.exit(0)
+        else:
+            pass  # Continue to any cleanup or additional processing
             
     except Exception as e:
         logger.error(f"CRITICAL ERROR: {e}")
