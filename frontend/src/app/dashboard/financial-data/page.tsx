@@ -14,40 +14,6 @@ import { Download, Filter, RefreshCw } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 import { useAuthStore } from '@/store/auth-store'
 
-export default function FinancialDataPage() {
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  const { 
-    data, 
-    isLoading, 
-    error, 
-    totalCount, 
-    page, 
-    limit, 
-    fetchData, 
-    downloadData,
-    accessLimits,
-    fetchAccessLimits,
-    isDownloading
-  } = useFinancialDataStore()
-  const { isAuthenticated, user } = useAuthStore()
-
-  // Filter state
-  const [filters, setFilters] = useState({
-    symbol: '',
-    asset_type: '',
-    start_date: '',
-    end_date: '',
-    page: 1,
-    limit: 100,
-    fields: ['close_price', 'rv5'] // Default fields to fetch and potentially plot
-  })
-
-  // Available fields for the chart
   const availableFields = [
     { value: 'open_price', label: 'Open Price' },
     { value: 'close_price', label: 'Close Price' },
@@ -57,7 +23,7 @@ export default function FinancialDataPage() {
     { value: 'trades', label: 'Trades' },
     { value: 'pv', label: 'PV (Parkinson Volatility)' },
     { value: 'gk', label: 'GK (Garman-Klass Volatility)' },
-    { value: 'rr5', label: 'RR5 (5-day Realized Range)' }, // Assuming RR stands for Realized Range
+  { value: 'rr5', label: 'RR5 (5-day Realized Range)' },
     { value: 'rv1', label: 'RV1 (1-day Realized Volatility)' },
     { value: 'rv5', label: 'RV5 (5-day Realized Volatility)' },
     { value: 'rv5_ss', label: 'RV5_SS (5-day Realized Volatility Sub-Sampled)' },
@@ -73,71 +39,82 @@ export default function FinancialDataPage() {
     { value: 'medrv1', label: 'MedRV1 (1-day Median Realized Volatility)' },
     { value: 'medrv5', label: 'MedRV5 (5-day Median Realized Volatility)' },
     { value: 'medrv5_ss', label: 'MedRV5_SS (5-day Median Realized Volatility Sub-Sampled)' },
-    { value: 'minrv1', label: 'MinRV1 (1-day Minimum Realized Volatility)' }, // Assuming MinRV
-    { value: 'minrv5', label: 'MinRV5 (5-day Minimum Realized Volatility)' }, // Assuming MinRV
-    { value: 'minrv5_ss', label: 'MinRV5_SS (5-day Minimum Realized Volatility Sub-Sampled)' }, // Assuming MinRV
+  { value: 'minrv1', label: 'MinRV1 (1-day Minimum Realized Volatility)' },
+  { value: 'minrv5', label: 'MinRV5 (5-day Minimum Realized Volatility)' },
+  { value: 'minrv5_ss', label: 'MinRV5_SS (5-day Minimum Realized Volatility Sub-Sampled)' },
     { value: 'rk', label: 'RK (Realized Kurtosis)' },
-  ]
+  { value: 'rq1', label: 'RQ1 (Realized Quarticity 1-min)' },
+  { value: 'rq5', label: 'RQ5 (Realized Quarticity 5-min)' },
+  { value: 'rq5_ss', label: 'RQ5_SS (Realized Quarticity 5-min Sub-Sampled)' },
+]
 
-  // Chart config now focuses on which of the fetched `fields` to display prominently
-  const [chartDisplayConfig, setChartDisplayConfig] = useState({
-    primaryMetric: 'close_price', // Main Y-axis
-    secondaryMetric: 'rv5',     // Optional second Y-axis
+export default function FinancialDataPage() {
+  const {
+    data,
+    isLoading,
+    error,
+    totalCount,
+    fetchData,
+    downloadData,
+    fetchAccessLimits,
+    isDownloading
+  } = useFinancialDataStore()
+  const { isAuthenticated, user } = useAuthStore()
+
+  const [filters, setFilters] = useState({
+    symbol: '',
+    asset_type: '',
+    start_date: '',
+    end_date: '',
+    page: 1,
+    limit: 100,
   })
 
-  // Load data on initial render
+  const [chartDisplayConfig, setChartDisplayConfig] = useState({
+    primaryMetric: 'close_price',
+    secondaryMetric: 'rv5',
+  })
+
   useEffect(() => {
     if (isAuthenticated && user) {
       fetchAccessLimits()
     }
   }, [isAuthenticated, user, fetchAccessLimits])
 
-  // Load data when filters or chartConfig change
   const loadData = useCallback(() => {
-    const coreTableFields = ['open_price', 'close_price', 'high_price', 'low_price', 'volume', 'trades'];
-    // Ensure essential metrics for display and table are included in fields to fetch
+    const coreFields = ['observation_date', 'symbol', 'asset_type', 'open_price', 'close_price', 'high_price', 'low_price', 'volume', 'trades'];
     const fieldsToFetch = Array.from(new Set([
+      ...coreFields,
       chartDisplayConfig.primaryMetric,
       chartDisplayConfig.secondaryMetric,
-      ...coreTableFields, // Aggiungiamo campi core per la tabella
-      'observation_date', 'symbol', 'asset_type' // Always fetch these for table and context
-    ].filter(Boolean))); // .filter(Boolean) rimuove eventuali valori null o undefined (es. se secondaryMetric è vuoto)
+    ].filter(Boolean)));
 
     fetchData({ 
-      ...filters, // symbol, asset_type, start_date, end_date, page, limit
-      page: 1, // Reset to page 1 on new filter/field application
-      fields: fieldsToFetch, // Passiamo i campi costruiti
+      ...filters,
+      page: 1,
+      fields: fieldsToFetch,
     });
-  }, [fetchData, filters, chartDisplayConfig]); // Includiamo chartDisplayConfig per triggerare il fetch quando le metriche del grafico cambiano
+  }, [fetchData, filters, chartDisplayConfig]);
 
-  // Initialize with some data
   useEffect(() => {
     loadData()
   }, [loadData])
 
-  // Handle filter changes
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setFilters(prev => ({ ...prev, [name]: value }))
   }
 
-  const handleMultiSelectFieldsChange = (selectedFields: string[]) => {
-    setFilters(prev => ({ ...prev, fields: selectedFields }));
-  };
-
-  // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     loadData()
   }
 
-  // Handle chart metric selection for prominent display
   const handleChartDisplayConfigChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target
     setChartDisplayConfig(prev => ({ ...prev, [name]: value }))
   }
 
-  // Handle data download
   const handleDownload = async () => {
     const success = await downloadData(filters);
     if (success) {
@@ -147,32 +124,18 @@ export default function FinancialDataPage() {
     }
   }
 
-  // Format data for chart, plotting all fields in `filters.fields` apart from date/symbol/type
-  const chartData = data.map(item => {
-    const point: any = {
+  const chartData = data.map(item => ({
       date: formatDate(item.observation_date),
-      symbol: item.symbol,
-      // asset_type: item.asset_type, // Not usually plotted directly
-    };
-    filters.fields.forEach(field => {
-      if (item[field] !== undefined && typeof item[field] === 'number') {
-        point[field] = item[field];
-      }
-    });
-    return point;
-  });
+    ...item
+  }));
 
   const lineColors = ["#2563eb", "#f97316", "#10b981", "#8b5cf6", "#ec4899"];
 
-  // Ricalcoliamo i campi che dovrebbero essere stati fetchati per la tabella
-  const coreTableFieldsForRender = ['open_price', 'close_price', 'high_price', 'low_price', 'volume', 'trades'];
-  const tableColumns = Array.from(new Set([
+  const tableColumns = [
+    'open_price', 'close_price', 'high_price', 'low_price', 'volume', 'trades',
     chartDisplayConfig.primaryMetric,
-    chartDisplayConfig.secondaryMetric,
-    ...coreTableFieldsForRender,
-    // Aggiungiamo manualmente i campi non numerici se vogliamo vederli esplicitamente e non sono già inclusi
-    // 'symbol', 'asset_type' // observation_date è già la prima colonna dedicata
-  ].filter(Boolean)));
+    chartDisplayConfig.secondaryMetric
+  ].filter((value, index, self) => self.indexOf(value) === index && value);
 
   return (
     <div>
@@ -183,7 +146,6 @@ export default function FinancialDataPage() {
         </p>
       </div>
 
-      {/* Filters */}
       <Card className="mb-8">
         <CardHeader>
           <CardTitle className="text-lg flex items-center">
@@ -218,11 +180,10 @@ export default function FinancialDataPage() {
                   onChange={handleFilterChange}
                 >
                   <option value="">All Types</option>
-                  <option value="equity">Equity</option>
-                  <option value="fx">Foreign Exchange</option>
-                  <option value="crypto">Cryptocurrency</option>
-                  <option value="future">Future</option>
-                  <option value="bond">Bond</option>
+                  <option value="stocks">Stocks</option>
+                  <option value="futures">Futures</option>
+                  <option value="etf">ETF</option>
+                  <option value="forex">Forex</option>
                 </Select>
               </div>
               
@@ -332,7 +293,6 @@ export default function FinancialDataPage() {
         </CardContent>
       </Card>
 
-      {/* Data Visualization */}
       <Card className="mb-6">
         <CardHeader>
           <CardTitle>Data Visualization</CardTitle>
@@ -360,7 +320,6 @@ export default function FinancialDataPage() {
                   {chartDisplayConfig.secondaryMetric && <YAxis yAxisId="right" orientation="right" />}
                   <Tooltip />
                   <Legend />
-                  {/* Line for Primary Metric */}
                   {chartDisplayConfig.primaryMetric && (
                     <Line
                       yAxisId="left"
@@ -371,7 +330,6 @@ export default function FinancialDataPage() {
                       dot={false}
                     />
                   )}
-                  {/* Line for Secondary Metric if selected */}
                   {chartDisplayConfig.secondaryMetric && (
                     <Line
                       yAxisId="right"
@@ -394,8 +352,7 @@ export default function FinancialDataPage() {
         </CardContent>
       </Card>
 
-      {/* Data Table */}
-      {isClient && data.length > 0 && (
+      {data.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>Data Table</CardTitle>
@@ -414,8 +371,7 @@ export default function FinancialDataPage() {
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Type
                     </th>
-                    {tableColumns.filter(key => key !== 'observation_date' && key !== 'symbol' && key !== 'asset_type') // Escludiamo quelli già dedicati
-                      .map(key => (
+                    {tableColumns.map(key => (
                       <th key={key} scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         {availableFields.find(f => f.value === key)?.label || key.replace(/_/g, ' ')}
                       </th>
@@ -423,8 +379,8 @@ export default function FinancialDataPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {isClient && data.map((item, i) => (
-                    <tr key={i}> {/* Considerare una chiave più robusta se possibile */}
+                  {data.map((item, i) => (
+                    <tr key={item.id || i}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {formatDate(item.observation_date)}
                       </td>
@@ -434,10 +390,9 @@ export default function FinancialDataPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">
                         {item.asset_type}
                       </td>
-                      {tableColumns.filter(key => key !== 'observation_date' && key !== 'symbol' && key !== 'asset_type')
-                        .map(key => (
+                      {tableColumns.map(key => (
                         <td key={key} className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {typeof item[key] === 'number' ? parseFloat(item[key].toFixed(4)) : item[key]}
+                          {typeof item[key] === 'number' ? parseFloat(item[key].toFixed(4)) : (item[key] === null ? 'N/A' : item[key])}
                         </td>
                       ))}
                     </tr>

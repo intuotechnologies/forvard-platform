@@ -83,8 +83,14 @@ export const useFinancialDataStore = create<FinancialDataState>((set, get) => ({
         'asset_type' 
       ]));
 
+      console.log('🔍 DEBUG: Fields being sent to API:', fieldsToFetch);
+      console.log('🔍 DEBUG: Full options being sent:', { ...options, fields: fieldsToFetch });
+
       const response = await api.get('/financial-data', { params: { ...options, fields: fieldsToFetch } });
       const result: DataResponse = response.data;
+      
+      console.log('🔍 DEBUG: API Response received:', result);
+      console.log('🔍 DEBUG: First data point:', result.data[0]);
       
       set({
         data: result.data.sort((a, b) => new Date(a.observation_date).getTime() - new Date(b.observation_date).getTime()),
@@ -95,6 +101,7 @@ export const useFinancialDataStore = create<FinancialDataState>((set, get) => ({
         isLoading: false,
       });
     } catch (error: any) {
+      console.error('🔍 DEBUG: API Error:', error);
       set({ isLoading: false, error: error.response?.data?.detail || 'Failed to fetch data' });
     }
   },

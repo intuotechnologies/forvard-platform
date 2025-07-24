@@ -254,24 +254,23 @@ async def get_financial_data(
         "rq1", "rq5", "rq5_ss"  # Added new Realized Quarticity fields
     }
 
-    # Start with core fields plus rv5 as a default optional field
-    fields_to_select = core_fields + ["rv5"]
-    
-    # Add other requested optional fields if specified
-    if fields: # fields is the Query parameter from the endpoint
-        # User wants specific optional fields
+    # If no fields are specified, select all fields, including core ones.
+    if not fields:
+        fields_to_select = core_fields + list(all_optional_fields)
+    else:
+        # User wants specific optional fields, so start with core fields
+        fields_to_select = core_fields[:]
+        # Add only the valid, requested optional fields
         for field_name in fields:
             if field_name in all_optional_fields:
-                if field_name not in fields_to_select: # Add if not already present
+                if field_name not in fields_to_select:
                     fields_to_select.append(field_name)
-            elif field_name == "all": # Special keyword to request all optional fields
-                for opt_field in all_optional_fields:
-                    if opt_field not in fields_to_select:
-                        fields_to_select.append(opt_field)
-                break # "all" overrides other specific field requests in this logic
+            elif field_name == "all":
+                fields_to_select = core_fields + list(all_optional_fields)
+                break
     
     # Construct the SELECT part of the query
-    select_clause = ", ".join(fields_to_select)
+    select_clause = ", ".join(f'"{f}"' for f in fields_to_select)
     query_parts = [f"SELECT {select_clause} FROM realized_volatility_data WHERE 1=1"]
     
     # Build where clause and params

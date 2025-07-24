@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 // API URLs - Use a server-side runtime environment variable
-const API_URL = process.env.API_URL || 'http://localhost:8443'
+const API_URL = process.env.API_URL || 'http://localhost:8000'
 
 export async function GET(
   request: NextRequest,
