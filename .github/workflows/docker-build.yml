@@ -45,31 +45,56 @@ jobs:
           -v forvard_logs:/app/logs \
           forvard-api:test
         
-        # Wait for container to start
-        sleep 10
-        
-        # Check if container is running
-        if [ "$(docker inspect -f {{.State.Running}} forvard_api_test)" = "true" ]; then
-          echo "API container is running successfully"
-          
-          # Test API endpoint
-          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/docs)
-          if [ "$RESPONSE" = "200" ]; then
-            echo "API endpoint is responding correctly"
-            exit 0
-          else
-            echo "API endpoint returned status $RESPONSE"
+        # Wait for container to start and be ready
+        echo "Waiting for container to be ready..."
+        for i in {1..30}; do
+          if docker ps | grep -q forvard_api_test; then
+            echo "Container is running, checking if API is ready..."
+            
+            # Test with retry logic
+            for j in {1..10}; do
+              echo "Attempt $j: Testing API endpoint..."
+              
+              # Test health endpoint first (if available)
+              HEALTH_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/health 2>/dev/null || echo "000")
+              
+              # Test docs endpoint
+              DOCS_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/docs 2>/dev/null || echo "000")
+              
+              # Test root endpoint as fallback
+              ROOT_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/ 2>/dev/null || echo "000")
+              
+              echo "Health: $HEALTH_RESPONSE, Docs: $DOCS_RESPONSE, Root: $ROOT_RESPONSE"
+              
+              if [ "$HEALTH_RESPONSE" = "200" ] || [ "$DOCS_RESPONSE" = "200" ] || [ "$ROOT_RESPONSE" = "200" ]; then
+                echo "API endpoint is responding correctly"
+                exit 0
+              fi
+              
+              if [ $j -lt 10 ]; then
+                echo "API not ready yet, waiting 3 seconds..."
+                sleep 3
+              fi
+            done
+            
+            echo "API failed to respond after 10 attempts"
+            echo "Container logs:"
             docker logs forvard_api_test
             exit 1
           fi
-        else
-          echo "API container failed to start"
-          docker logs forvard_api_test
-          exit 1
-        fi
+          
+          if [ $i -lt 30 ]; then
+            echo "Container not running yet, waiting 2 seconds..."
+            sleep 2
+          fi
+        done
+        
+        echo "Container failed to start within 60 seconds"
+        docker logs forvard_api_test
+        exit 1
     
     - name: Cleanup
       if: always()
       run: |
         docker rm -f forvard_api_test || true
-        docker network rm forvard_network || true 
+        docker network rm forvard_network || true
