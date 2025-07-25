@@ -38,7 +38,7 @@ jobs:
         docker run -d \
           --name forvard_api_test \
           --network forvard_network \
-          -p 8000:8000 \
+          -p 8443:8443 \
           -e JWT_SECRET_KEY="test_jwt_secret_key" \
           -e SESSION_SECRET_KEY="test_session_secret_key" \
           -e USE_SQLITE_FOR_TESTS="true" \
@@ -56,13 +56,13 @@ jobs:
               echo "Attempt $j: Testing API endpoint..."
               
               # Test health endpoint first (if available)
-              HEALTH_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/health 2>/dev/null || echo "000")
+              HEALTH_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8443/health 2>/dev/null || echo "000")
               
               # Test docs endpoint
-              DOCS_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/docs 2>/dev/null || echo "000")
+              DOCS_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8443/docs 2>/dev/null || echo "000")
               
               # Test root endpoint as fallback
-              ROOT_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/ 2>/dev/null || echo "000")
+              ROOT_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8443/ 2>/dev/null || echo "000")
               
               echo "Health: $HEALTH_RESPONSE, Docs: $DOCS_RESPONSE, Root: $ROOT_RESPONSE"
               
