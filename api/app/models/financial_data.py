@@ -1,23 +1,26 @@
-from pydantic import BaseModel, Field
-from typing import Optional, List, Dict, Any
+from pydantic import BaseModel, field_validator
+from typing import Optional, Union, List, Dict
 from datetime import date
+from decimal import Decimal
 
 
 class FinancialDataPoint(BaseModel):
     """Model for a single financial data point"""
     observation_date: date
     symbol: str
-    asset_type: Optional[str] = None
+    asset_type: str
     volume: Optional[int] = None
     trades: Optional[int] = None
     open_price: Optional[float] = None
     close_price: Optional[float] = None
     high_price: Optional[float] = None
     low_price: Optional[float] = None
+    
+    # Volatility measures
     pv: Optional[float] = None
     gk: Optional[float] = None
     rr5: Optional[float] = None
-    rv1: Optional[float] = None
+    rv1: Optional[float] = None  # Questo campo potrebbe avere problemi
     rv5: Optional[float] = None
     rv5_ss: Optional[float] = None
     bv1: Optional[float] = None
@@ -36,9 +39,21 @@ class FinancialDataPoint(BaseModel):
     minrv5: Optional[float] = None
     minrv5_ss: Optional[float] = None
     rk: Optional[float] = None
-    rq1: Optional[float] = None  # Realized Quarticity (1-min)
-    rq5: Optional[float] = None  # Realized Quarticity (5-min)
-    rq5_ss: Optional[float] = None  # Realized Quarticity (5-min, sub-sampled)
+    rq1: Optional[float] = None
+    rq5: Optional[float] = None
+    rq5_ss: Optional[float] = None
+
+    @field_validator('rv1', 'rv5', 'rv5_ss', 'bv1', 'bv5', 'bv5_ss', 'medrv1', 'medrv5', 'medrv5_ss', 
+                    'minrv1', 'minrv5', 'minrv5_ss', 'rq1', 'rq5', 'rq5_ss', mode='before')
+    @classmethod
+    def convert_decimal_to_float(cls, v):
+        if v is None:
+            return None
+        if isinstance(v, Decimal):
+            return float(v)
+        if isinstance(v, (int, float)):
+            return float(v)
+        return v
 
     class Config:
         from_attributes = True
