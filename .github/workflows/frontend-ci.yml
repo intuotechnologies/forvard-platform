@@ -1,7 +1,7 @@
 name: Frontend CI
 
 on:
-  pull_request:
+  push:
     branches: [ main ]
     paths:
       - 'frontend/**'
@@ -28,4 +28,4 @@ jobs:
           load: true # Load image into docker for testing if needed
           tags: salvini/forvard-frontend:test-build
           cache-from: type=gha
-          cache-to: type=gha,mode=max 
+          cache-to: type=gha,mode=max
