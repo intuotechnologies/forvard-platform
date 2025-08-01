@@ -80,7 +80,7 @@ def create_backup_directory(base_path="/backup"):
 
 def backup_database(host, port, user, password, database, output_file, logger):
     """
-    Create a database backup using pg_dump
+    Create a database backup using docker exec to run pg_dump inside the PostgreSQL container
     
     Args:
         host: Database host
@@ -92,31 +92,34 @@ def backup_database(host, port, user, password, database, output_file, logger):
         logger: Logger instance
     """
     try:
-        # Set environment variable for password
-        env = os.environ.copy()
-        env['PGPASSWORD'] = password
+        logger.info(f"Starting backup for database: {database}")
+        logger.info(f"Output file: {output_file}")
         
-        # Construct pg_dump command
-        cmd = [
+        # Use docker exec to run pg_dump inside the PostgreSQL container
+        # This ensures we use the correct pg_dump version that matches the PostgreSQL server
+        docker_cmd = [
+            'docker', 'exec',
+            'forvard_app_postgres',  # Container name from docker-compose
             'pg_dump',
-            f'--host={host}',
-            f'--port={port}',
+            f'--host=localhost',  # Use localhost since we're inside the container
+            f'--port=5432',
             f'--username={user}',
             '--verbose',
             '--clean',
             '--no-owner',
             '--no-privileges',
             '--format=custom',
-            f'--file={output_file}',
+            f'--file=/tmp/{os.path.basename(output_file)}',  # Save to /tmp inside container
             database
         ]
         
-        logger.info(f"Starting backup for database: {database}")
-        logger.info(f"Output file: {output_file}")
+        # Set environment variable for password
+        env = os.environ.copy()
+        env['PGPASSWORD'] = password
         
-        # Execute pg_dump
+        # Execute docker command
         result = subprocess.run(
-            cmd,
+            docker_cmd,
             env=env,
             capture_output=True,
             text=True,
@@ -124,12 +127,30 @@ def backup_database(host, port, user, password, database, output_file, logger):
         )
         
         if result.returncode == 0:
-            # Get file size
-            file_size = os.path.getsize(output_file)
-            file_size_mb = file_size / (1024 * 1024)
-            logger.info(f"Backup completed successfully for {database}")
-            logger.info(f"File size: {file_size_mb:.2f} MB")
-            return True, file_size_mb
+            # Copy the file from the container to the host
+            copy_cmd = [
+                'docker', 'cp',
+                f'forvard_app_postgres:/tmp/{os.path.basename(output_file)}',
+                output_file
+            ]
+            
+            copy_result = subprocess.run(
+                copy_cmd,
+                capture_output=True,
+                text=True,
+                timeout=300  # 5 minutes timeout for copy
+            )
+            
+            if copy_result.returncode == 0:
+                # Get file size
+                file_size = os.path.getsize(output_file)
+                file_size_mb = file_size / (1024 * 1024)
+                logger.info(f"Backup completed successfully for {database}")
+                logger.info(f"File size: {file_size_mb:.2f} MB")
+                return True, file_size_mb
+            else:
+                logger.error(f"Failed to copy backup file from container: {copy_result.stderr}")
+                return False, 0
         else:
             logger.error(f"Backup failed for {database}")
             logger.error(f"Error: {result.stderr}")
@@ -263,22 +284,22 @@ def main(
             status_text = "PARTIAL FAILURE" if successful_backups > 0 else "FAILURE"
             logger.warning("SOME DATABASE BACKUPS FAILED!")
         
-        # Create Slack message
-        slack_message = f"{status_emoji} **DATABASE BACKUP COMPLETED** {status_emoji}\n\n"
-        slack_message += f"**Status:** {status_text}\n"
-        slack_message += f"**Duration:** {str(duration).split('.')[0]}\n"
-        slack_message += f"**Backup Location:** {backup_dir}\n\n"
+        # Create Slack message with proper formatting
+        slack_message = f"{status_emoji} *DATABASE BACKUP COMPLETED* {status_emoji}\n\n"
+        slack_message += f"*Status:* {status_text}\n"
+        slack_message += f"*Duration:* {str(duration).split('.')[0]}\n"
+        slack_message += f"*Backup Location:* {backup_dir}\n\n"
         
-        slack_message += "**Backup Results:**"
+        slack_message += "*Backup Results:*"
         for env, result in backup_results.items():
             result_emoji = "✅" if result['success'] else "❌"
             status = "SUCCESS" if result['success'] else "FAILED"
             size_info = f" ({result['size_mb']:.2f} MB)" if result['success'] else ""
             slack_message += f"\n{result_emoji} {env.upper()}: {status}{size_info}"
         
-        slack_message += f"\n\n**Total Size:** {total_size:.2f} MB"
-        slack_message += f"\n**Successful:** {successful_backups}/{len(backup_results)}"
-        slack_message += f"\n\n**Timestamp:** {end_time.strftime('%Y-%m-%d %H:%M:%S')}"
+        slack_message += f"\n\n*Total Size:* {total_size:.2f} MB"
+        slack_message += f"\n*Successful:* {successful_backups}/{len(backup_results)}"
+        slack_message += f"\n\n*Timestamp:* {end_time.strftime('%Y-%m-%d %H:%M:%S')}"
         
         # Send Slack notification
         send_slack_notification(slack_message)
@@ -296,9 +317,9 @@ def main(
         logger.error(error_msg)
         
         # Send error notification
-        slack_message = f"❌ **DATABASE BACKUP FAILED** ❌\n\n"
-        slack_message += f"**Error:** {str(e)}\n"
-        slack_message += f"**Timestamp:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        slack_message = f"❌ *DATABASE BACKUP FAILED* ❌\n\n"
+        slack_message += f"*Error:* {str(e)}\n"
+        slack_message += f"*Timestamp:* {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
         send_slack_notification(slack_message)
         
         raise
