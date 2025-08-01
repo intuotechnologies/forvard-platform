@@ -132,9 +132,9 @@ COMMENT ON COLUMN public.realized_volatility_data.rq5_ss
 CREATE TABLE IF NOT EXISTS public.realized_covariance_data
 (
     id serial NOT NULL,
-    observation_date date NOT NULL,
-    asset1_symbol character varying(20) COLLATE pg_catalog."default" NOT NULL,
-    asset2_symbol character varying(20) COLLATE pg_catalog."default" NOT NULL,
+    date date NOT NULL,
+    asset1 character varying(20) COLLATE pg_catalog."default" NOT NULL,
+    asset2 character varying(20) COLLATE pg_catalog."default" NOT NULL,
     rcov numeric,
     rbpcov numeric,
     rscov_p numeric,
@@ -142,7 +142,7 @@ CREATE TABLE IF NOT EXISTS public.realized_covariance_data
     rscov_mp numeric,
     rscov_mn numeric,
     CONSTRAINT realized_covariance_data_pkey PRIMARY KEY (id),
-    CONSTRAINT realized_covariance_data_observation_date_asset1_symbol_ass_key UNIQUE (observation_date, asset1_symbol, asset2_symbol)
+    CONSTRAINT realized_covariance_data_date_asset1_ass_key UNIQUE (date, asset1, asset2)
 );
 
 COMMENT ON TABLE public.realized_covariance_data

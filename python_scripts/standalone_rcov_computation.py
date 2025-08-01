@@ -29,19 +29,48 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 import re
 from numba import jit
+import wmill
+WINDMILL_AVAILABLE = True
 
-# Windmill integration
-try:
-    import wmill
-    WINDMILL_AVAILABLE = True
-except ImportError:
-    WINDMILL_AVAILABLE = False
-    # Mock wmill for local testing
-    class MockWmill:
-        @staticmethod
-        def get_variable(key):
-            return os.getenv(key.split('/')[-1], '')
-    wmill = MockWmill()
+
+# Slack notification function
+def send_slack_notification(message_text):
+    """
+    Sends a notification message to a configured Slack channel.
+    
+    Reads the Slack API token and Channel ID from environment variables
+    set in Windmill.
+    """
+    slack_token = wmill.get_variable("u/niccolosalvini27/SLACK_API_TOKEN")
+    slack_channel = wmill.get_variable("u/niccolosalvini27/SLACK_CHANNEL_ID")
+
+    if not slack_token or not slack_channel:
+        logger.warning("Slack environment variables not found (SLACK_API_TOKEN, SLACK_CHANNEL_ID). Notification skipped.")
+        return
+
+    url = "https://slack.com/api/chat.postMessage"
+    headers = {
+        "Authorization": f"Bearer {slack_token}",
+        "Content-type": "application/json; charset=utf-8"
+    }
+    payload = {
+        "channel": slack_channel,
+        "text": message_text
+    }
+
+    try:
+        import requests
+        response = requests.post(url, headers=headers, json=payload, timeout=30)
+        response.raise_for_status()
+        
+        response_json = response.json()
+        if response_json.get("ok"):
+            logger.info("Slack notification sent successfully.")
+        else:
+            logger.error(f"Slack API error: {response_json.get('error')}")
+
+    except Exception as e:
+        logger.error(f"Error sending Slack notification: {e}")
 
 # Enhanced logging setup
 logging.basicConfig(
@@ -185,7 +214,7 @@ def calculate_covariance_matrices(returns, measures=['RCov']):
     
     return results
 
-def resample_prices(prices, resample_freq='1min', resampling_method='last'):
+def resample_prices(prices, resample_freq='1T', resampling_method='last'):
     """
     Resample price series with specified frequency and method.
     """
@@ -212,15 +241,20 @@ def resample_prices(prices, resample_freq='1min', resampling_method='last'):
         logger.error(f"Error in resampling: {e}")
         return prices, len(prices)
 
-def calculate_returns_from_prices(price_df):
+def calculate_returns_from_prices(sync_prices):
     """
-    Calculate log returns from synchronized price DataFrame.
+    Calculate log returns from synchronized prices - optimized version.
     """
-    # Calculate log returns
-    log_prices = np.log(price_df)
-    returns = log_prices.diff().dropna()
+    # Vectorized log return calculation for all columns at once
+    log_prices = np.log(sync_prices.values)
+    log_returns = np.diff(log_prices, axis=0)
     
-    return returns
+    # Create DataFrame directly from numpy array
+    return pd.DataFrame(
+        log_returns, 
+        index=sync_prices.index[1:], 
+        columns=sync_prices.columns
+    )
 
 def prepare_data_rcov(file_path, config, s3_client, bucket_name):
     """Load and prepare tick data from S3 file."""
@@ -278,7 +312,7 @@ def prepare_data_rcov(file_path, config, s3_client, bucket_name):
         logger.error(f"Error loading data from {file_path}: {e}")
         return None
 
-def process_single_day(file_paths, assets, date, asset_configs, resample_freq='1min', 
+def process_single_day(file_paths, assets, date, asset_configs, resample_freq='1T', 
                       resampling_method='last', measures=['RCov'], logger=None,
                       mixed_asset_mode=False, early_closing_day_file=None, s3_client=None, bucket_name=None):
     """
@@ -289,6 +323,7 @@ def process_single_day(file_paths, assets, date, asset_configs, resample_freq='1
         return None
     
     price_series = {}
+    has_stocks = any(config['asset_type'] == 'stocks' for config in asset_configs.values())
     
     # Load and process each asset's data
     for asset in assets:
@@ -302,8 +337,41 @@ def process_single_day(file_paths, assets, date, asset_configs, resample_freq='1
             # Load data using the prepare_data_rcov function
             df = prepare_data_rcov(file_path, asset_config, s3_client, bucket_name)
             
-            if df is None or df.empty:
+            if df is None or df.empty or len(df) < 10:
                 continue
+            
+            # Filter non-stock assets to stock trading hours when mixed mode
+            if (mixed_asset_mode and has_stocks and 
+                asset_config['asset_type'] in ['forex', 'futures']):
+                
+                # Early closing days hardcoded
+                early_closing_days = [
+                    '2015_11_27', '2015_12_24', '2016_11_25', '2016_12_24', '2017_07_03',
+                    '2017_11_24', '2017_12_24', '2018_07_03', '2018_11_23', '2018_12_24',
+                    '2019_07_03', '2019_11_29', '2019_12_24', '2020_11_27', '2020_12_24',
+                    '2021_11_26', '2021_12_24', '2022_11_25', '2022_12_24', '2023_07_03',
+                    '2023_11_24', '2023_12_24', '2024_07_03', '2024_11_29', '2024_12_24',
+                    '2025_07_03', '2025_11_28', '2025_12_24', '2026_11_27', '2026_12_24',
+                    '2027_11_26', '2027_12_24'
+                ]
+                
+                # Simple trading hours filter for mixed assets
+                day = date.replace('.txt', '').replace('.parquet', '')
+                
+                # Determine closing time
+                if day in early_closing_days:
+                    end_time = datetime.strptime('12:59:59.999', '%H:%M:%S.%f').time()
+                else:
+                    end_time = datetime.strptime('15:59:59.999', '%H:%M:%S.%f').time()
+                
+                start_time = datetime.strptime('09:30:00.000', '%H:%M:%S.%f').time()
+                
+                # Filter by trading hours
+                time_mask = (df.index.time >= start_time) & (df.index.time <= end_time)
+                df = df[time_mask]
+                
+                if len(df) < 10:
+                    continue
             
             # Use price column
             prices = df['price']
@@ -601,9 +669,9 @@ class S3CovarianceProcessor:
             results = []
             for _, row in formatted_df.iterrows():
                 result_dict = {
-                    'observation_date': row['date'],  # Map 'date' to 'observation_date'
-                    'asset1_symbol': row['asset1'],   # Map 'asset1' to 'asset1_symbol'
-                    'asset2_symbol': row['asset2'],   # Map 'asset2' to 'asset2_symbol'
+                    'date': row['date'],  # Map 'date' to 'date'
+                    'asset1': row['asset1'],   # Map 'asset1' to 'asset1'
+                    'asset2': row['asset2'],   # Map 'asset2' to 'asset2'
                 }
                 
                 # Add covariance measures with proper column mapping
@@ -664,12 +732,12 @@ class S3CovarianceProcessor:
                     # Check if record already exists
                     check_query = """
                         SELECT id FROM realized_covariance_data 
-                        WHERE observation_date = %s AND asset1_symbol = %s AND asset2_symbol = %s
+                        WHERE date = %s AND asset1 = %s AND asset2 = %s
                     """
                     cursor.execute(check_query, (
-                        converted_result['observation_date'], 
-                        converted_result['asset1_symbol'], 
-                        converted_result['asset2_symbol']
+                        converted_result['date'], 
+                        converted_result['asset1'], 
+                        converted_result['asset2']
                     ))
                     existing = cursor.fetchone()
                     
@@ -680,10 +748,10 @@ class S3CovarianceProcessor:
                     # Insert new record
                     insert_query = """
                         INSERT INTO realized_covariance_data (
-                            observation_date, asset1_symbol, asset2_symbol,
+                            date, asset1, asset2,
                             rcov, rbpcov, rscov_p, rscov_n, rscov_mp, rscov_mn
                         ) VALUES (
-                            %(observation_date)s, %(asset1_symbol)s, %(asset2_symbol)s,
+                            %(date)s, %(asset1)s, %(asset2)s,
                             %(rcov)s, %(rbpcov)s, %(rscov_p)s, %(rscov_n)s, 
                             %(rscov_mp)s, %(rscov_mn)s
                         )
@@ -693,7 +761,7 @@ class S3CovarianceProcessor:
                     inserted_count += 1
                     
                 except Exception as e:
-                    self.logger.error(f"Error inserting record for {result.get('asset1_symbol', 'unknown')}-{result.get('asset2_symbol', 'unknown')} {result.get('observation_date', 'unknown')}: {e}")
+                    self.logger.error(f"Error inserting record for {result.get('asset1', 'unknown')}-{result.get('asset2', 'unknown')} {result.get('date', 'unknown')}: {e}")
                     continue
             
             # Commit changes
@@ -767,36 +835,173 @@ def process_dates_batch(processor: S3CovarianceProcessor, dates: List[str], max_
     
     return results
 
-def main():
-    """Main execution function"""
+def main(
+    # Pipeline configuration
+    pipeline_name="futures",
+    pipeline_enabled=True,
     
-    # Configuration with symbols embedded directly
-    config = {
-        "symbols": {
-            "GE": {
-                "asset_type": "stocks",
-                "file_format": "parquet"
-            },
-            "JNJ": {
-                "asset_type": "stocks", 
-                "file_format": "parquet"
+    # Asset type configuration
+    stocks_enabled=False,
+    stocks_symbols=["GE", "JNJ"],
+    forex_enabled=False,
+    forex_symbols=["EURUSD", "JPYUSD"],
+    futures_enabled=True,
+    futures_symbols=["CL", "GC"],
+    mixed_enabled=False,
+    mixed_symbols=["GE:stocks", "JNJ:stocks", "EURUSD:forex", "JPYUSD:forex", "CL:futures", "GC:futures"],
+    
+    # Date range
+    start_date="03/01/2024",
+    end_date="03/01/2025",
+    
+    # Processing settings
+    resample_freq="1T",
+    resampling_method="last",
+    measures=None,
+    max_workers=8,
+    batch_size=50,
+    
+    # File format
+    file_format="parquet"
+):
+    """
+    Standalone Realized Covariance Computation
+    
+    Args:
+        pipeline_name: Name of the pipeline (e.g., 'futures', 'stocks', 'forex', 'mixed_assets')
+        pipeline_enabled: Whether the pipeline is enabled
+        
+        # Asset type configuration
+        stocks_enabled: Enable stocks pipeline
+        stocks_symbols: List of stock symbols
+        forex_enabled: Enable forex pipeline  
+        forex_symbols: List of forex symbols
+        futures_enabled: Enable futures pipeline
+        futures_symbols: List of futures symbols
+        mixed_enabled: Enable mixed assets pipeline
+        mixed_symbols: List of mixed symbols with format "SYMBOL:TYPE"
+        
+        start_date: Start date in MM/DD/YYYY format
+        end_date: End date in MM/DD/YYYY format
+        resample_freq: Resampling frequency (e.g., '1T', '5T')
+        resampling_method: Resampling method ('last', 'mean', 'first')
+        measures: List of covariance measures to compute
+        max_workers: Maximum number of parallel workers
+        batch_size: Number of dates to process in each batch
+        file_format: File format ('parquet' or 'txt')
+    """
+    # Early closing days (hardcoded as requested)
+    early_closing_days = [
+        '2015_11_27', '2015_12_24', '2016_11_25', '2016_12_24', '2017_07_03',
+        '2017_11_24', '2017_12_24', '2018_07_03', '2018_11_23', '2018_12_24',
+        '2019_07_03', '2019_11_29', '2019_12_24', '2020_11_27', '2020_12_24',
+        '2021_11_26', '2021_12_24', '2022_11_25', '2022_12_24', '2023_07_03',
+        '2023_11_24', '2023_12_24', '2024_07_03', '2024_11_29', '2024_12_24',
+        '2025_07_03', '2025_11_28', '2025_12_24', '2026_11_27', '2026_12_24',
+        '2027_11_26', '2027_12_24'
+    ]
+    
+    # Determine which asset type to process based on enabled flags
+    if stocks_enabled:
+        asset_type = "stocks"
+        symbols_list = stocks_symbols
+    elif forex_enabled:
+        asset_type = "forex"
+        symbols_list = forex_symbols
+    elif futures_enabled:
+        asset_type = "futures"
+        symbols_list = futures_symbols
+    elif mixed_enabled:
+        asset_type = "mixed"
+        symbols_list = mixed_symbols
+    else:
+        # Default to futures if nothing is enabled
+        asset_type = "futures"
+        symbols_list = futures_symbols
+    
+    # Build symbols dictionary based on asset type and symbols list
+    symbols = {}
+    
+    if asset_type == "mixed":
+        # Parse mixed symbols with format "SYMBOL:TYPE"
+        for symbol_entry in symbols_list:
+            if ':' in symbol_entry:
+                symbol, symbol_type = symbol_entry.split(':', 1)
+                symbols[symbol] = {
+                    "asset_type": symbol_type.lower(),
+                    "file_format": file_format
+                }
+            else:
+                # Default to stocks if no type specified
+                symbols[symbol_entry] = {
+                    "asset_type": "stocks",
+                    "file_format": file_format
+                }
+    else:
+        # Single asset type
+        for symbol in symbols_list:
+            symbols[symbol] = {
+                "asset_type": asset_type,
+                "file_format": file_format
             }
+    
+    # Default measures if none provided
+    if measures is None:
+        measures = ["RCov", "RBPCov", "RSCov"]
+    
+    # Convert dates from MM/DD/YYYY to YYYY_MM_DD format
+    try:
+        start_date_converted = datetime.strptime(start_date, '%m/%d/%Y').strftime('%Y_%m_%d')
+        end_date_converted = datetime.strptime(end_date, '%m/%d/%Y').strftime('%Y_%m_%d')
+    except ValueError:
+        # If dates are already in YYYY_MM_DD format, use as is
+        start_date_converted = start_date
+        end_date_converted = end_date
+    
+    # Configuration structure matching the original format
+    config = {
+        "general": {
+            "file_format": file_format,
+            "rv_threads_max": max_workers
         },
+        "covariance_settings": {
+            "resample_freq": resample_freq,
+            "resampling_method": resampling_method
+        },
+        "symbols": symbols,
         "processing": {
-            "start_date": "2024_03_01",
-            "end_date": "2024_03_31",
-            "resample_freq": "1min",
-            "resampling_method": "last",
-            "measures": ["RCov", "RBPCov", "RSCov"],
-            "max_workers": 2,
-            "batch_size": 50
+            "start_date": start_date_converted,
+            "end_date": end_date_converted,
+            "measures": measures,
+            "max_workers": max_workers,
+            "batch_size": batch_size
         }
     }
     
-    logger.info("Starting Standalone Realized Covariance Computation")
+    start_time = datetime.now()
+    logger.info(f"RCOV COMPUTATION START: {start_time.strftime('%Y-%m-%d %H:%M:%S')}")
+    logger.info(f"Pipeline: {pipeline_name}")
+    logger.info(f"Asset type: {asset_type}")
     logger.info(f"Processing symbols: {list(config['symbols'].keys())}")
+    logger.info(f"Date range: {start_date} to {end_date}")
     
-    start_time = time.time()
+    # Log which asset types are enabled
+    enabled_types = []
+    if stocks_enabled:
+        enabled_types.append(f"stocks({len(stocks_symbols)} symbols)")
+    if forex_enabled:
+        enabled_types.append(f"forex({len(forex_symbols)} symbols)")
+    if futures_enabled:
+        enabled_types.append(f"futures({len(futures_symbols)} symbols)")
+    if mixed_enabled:
+        enabled_types.append(f"mixed({len(mixed_symbols)} symbols)")
+    
+    if enabled_types:
+        logger.info(f"Enabled asset types: {', '.join(enabled_types)}")
+    else:
+        logger.info("No asset types enabled, using default (futures)")
+    
+    computation_start_time = time.time()
     
     try:
         # Initialize processor
@@ -838,11 +1043,15 @@ def main():
             logger.info(f"Batch completed: {batch_results['processed']} processed, {batch_results['errors']} errors")
         
         # Final results
-        execution_time = time.time() - start_time
+        execution_time = time.time() - computation_start_time
         success_rate = (all_results["processed"] / all_results["total_dates"]) * 100 if all_results["total_dates"] > 0 else 0
+        
+        end_time = datetime.now()
+        total_duration = end_time - start_time
         
         logger.info("=" * 60)
         logger.info("STANDALONE RCOV COMPUTATION COMPLETED")
+        logger.info(f"Pipeline: {pipeline_name} ({asset_type})")
         logger.info(f"Total dates: {all_results['total_dates']}")
         logger.info(f"Successfully processed: {all_results['processed']}")
         logger.info(f"Errors: {all_results['errors']}")
@@ -852,10 +1061,57 @@ def main():
         logger.info(f"Execution time: {execution_time:.1f} seconds")
         logger.info("=" * 60)
         
+        # Prepare Slack notification
+        if all_results["processed"] > 0:
+            status_emoji = "✅"
+            status_text = "SUCCESS"
+        else:
+            status_emoji = "❌"
+            status_text = "FAILURE"
+        
+        # Create Slack message
+        slack_message = f"{status_emoji} **RCOV COMPUTATION COMPLETED** {status_emoji}\n\n"
+        slack_message += f"**Status:** {status_text}\n"
+        slack_message += f"**Pipeline:** {pipeline_name}\n"
+        slack_message += f"**Asset Type:** {asset_type}\n"
+        slack_message += f"**Duration:** {str(total_duration).split('.')[0]}\n"
+        slack_message += f"**Symbols:** {len(symbols)}\n\n"
+        
+        # Add enabled asset types info
+        enabled_types = []
+        if stocks_enabled:
+            enabled_types.append(f"stocks({len(stocks_symbols)})")
+        if forex_enabled:
+            enabled_types.append(f"forex({len(forex_symbols)})")
+        if futures_enabled:
+            enabled_types.append(f"futures({len(futures_symbols)})")
+        if mixed_enabled:
+            enabled_types.append(f"mixed({len(mixed_symbols)})")
+        
+        if enabled_types:
+            slack_message += f"**Enabled Types:** {', '.join(enabled_types)}\n\n"
+        
+        slack_message += "**Processing Summary:**"
+        slack_message += f"\n📅 Total dates: {all_results['total_dates']}"
+        slack_message += f"\n✅ Successfully processed: {all_results['processed']}"
+        slack_message += f"\n❌ Errors: {all_results['errors']}"
+        slack_message += f"\n💾 Records inserted: {all_results['total_inserted']}"
+        slack_message += f"\n⏭️ Records skipped: {all_results['total_skipped']}"
+        
+        if all_results['total_dates'] > 0:
+            slack_message += f"\n📊 Success rate: {success_rate:.1f}%"
+        
+        slack_message += f"\n\n**Timestamp:** {end_time.strftime('%Y-%m-%d %H:%M:%S')}"
+        
+        # Send Slack notification
+        try:
+            send_slack_notification(slack_message)
+        except Exception as e:
+            logger.error(f"Error sending Slack notification: {e}")
+        
     except Exception as e:
         logger.error(f"Critical error in main execution: {e}")
         sys.exit(1)
 
-if __name__ == "__main__":
-    main()
+
     

@@ -535,7 +535,7 @@ def kernel_type(x, type = 'parzen'):
     elif type == 'tukeyhan':
         return 0.5 * (1 + np.cos(np.pi * x)) if x <= 1 else 0
 
-def resample_with_time_offsets(df, price_col, interval, offset_unit='S', num_offsets=1200):
+def resample_with_time_offsets(df, price_col, interval, offset_unit='s', num_offsets=1200):
     """Resample time series with progressive time-based offsets that shift the entire dataframe."""
     RV_sparse_values = []
     
@@ -610,7 +610,7 @@ def omega_squared(df, price_col, sample_freq ='2min'):
     return omega_squared
 
 def estimate_bandwidth(df, m, price_col ='price'):
-    rv_sparse = resample_with_time_offsets(df, price_col, '20min', offset_unit='s', num_offsets=1200)  
+    rv_sparse = resample_with_time_offsets(df, price_col, '20min', offset_unit='s', num_offsets=1200)
     
     # Noise variance
     noise_variance = omega_squared(df, price_col)
@@ -1403,40 +1403,45 @@ def setup_logging() -> logging.Logger:
     
     return logger
 
-def load_config() -> Dict[str, Any]:
-    """Load embedded configuration"""
-    return {
-        "s3_bucket": wmill.get_variable("u/niccolosalvini27/S3_BUCKET_DEV"),
-        "file_format": "parquet",  # Primary format with CSV fallback
-        
-        # Asset configurations with hardcoded symbols
-        "pipelines": {
-            "stocks_batch1": {
-                "enabled": True,
-                "asset_type": "stocks",
-                "symbols": ["GE", "JNJ"]
-            },
-            "forex": {
-                "enabled": False,
-                "asset_type": "forex", 
-                "symbols": ["EURUSD", "JPYUSD"]
-            },
-            "futures": {
-                "enabled": False,
-                "asset_type": "futures",
-                "symbols": ["CL", "GC"]
-            }
-        }
-    }
 
-def main():
-    """Main execution function"""
-    parser = argparse.ArgumentParser(description='Standalone Realized Variance Computation for ForVARD Project')
-    parser.add_argument('--pipelines', nargs='+', help='Pipelines to run (e.g., stocks_batch1 forex futures)')
-    parser.add_argument('--verbose', action='store_true', help='Enable verbose logging')
+
+def main(
+    # Pipeline configuration
+    pipeline_name="realized_volatility",
+    pipeline_enabled=True,
     
-    args = parser.parse_args()
+    # Asset type configuration - TRUE/FALSE per ogni tipo
+    stocks_enabled=True,
+    stocks_symbols=["GE", "JNJ"],
+    forex_enabled=False,
+    forex_symbols=["EURUSD", "JPYUSD"],
+    futures_enabled=False,
+    futures_symbols=["CL", "GC"],
     
+    # Processing settings
+    max_workers=4,
+    file_format="parquet",
+    s3_bucket=None
+):
+    """
+    Standalone Realized Variance Computation
+    
+    Args:
+        pipeline_name: Name of the pipeline (e.g., 'stocks_batch1', 'forex', 'futures')
+        pipeline_enabled: Whether the pipeline is enabled
+        
+        # Asset type configuration
+        stocks_enabled: Enable stocks pipeline
+        stocks_symbols: List of stock symbols
+        forex_enabled: Enable forex pipeline  
+        forex_symbols: List of forex symbols
+        futures_enabled: Enable futures pipeline
+        futures_symbols: List of futures symbols
+        
+        max_workers: Maximum number of parallel workers
+        file_format: File format ('parquet' or 'txt')
+        s3_bucket: S3 bucket name (if None, will use Windmill variable)
+    """
     start_time = datetime.now()
     
     # Setup logging
@@ -1444,129 +1449,128 @@ def main():
     logger.info(f"REALIZED VARIANCE COMPUTATION START: {start_time.strftime('%Y-%m-%d %H:%M:%S')}")
     
     try:
-        config = load_config()
+        # Get S3 bucket from Windmill if not provided
+        if s3_bucket is None:
+            s3_bucket = wmill.get_variable("u/niccolosalvini27/S3_BUCKET_DEV")
         
-        # Determine pipelines to run
-        if args.pipelines:
-            pipelines_to_run = args.pipelines
+        # Log which asset types are enabled
+        enabled_types = []
+        if stocks_enabled:
+            enabled_types.append(f"stocks({len(stocks_symbols)} symbols)")
+        if forex_enabled:
+            enabled_types.append(f"forex({len(forex_symbols)} symbols)")
+        if futures_enabled:
+            enabled_types.append(f"futures({len(futures_symbols)} symbols)")
+        
+        if enabled_types:
+            logger.info(f"Enabled asset types: {', '.join(enabled_types)}")
         else:
-            pipelines_to_run = [name for name, conf in config['pipelines'].items() if conf.get('enabled', True)]
+            logger.info("No asset types enabled, using default (stocks)")
+            stocks_enabled = True
+            stocks_symbols = ["GE", "JNJ"]
         
-        if not pipelines_to_run:
-            logger.error("No pipelines to run. Check configuration.")
+        # Process all enabled asset types
+        all_results = []
+        total_processed = 0
+        total_errors = 0
+        total_files = 0
+        total_skipped = 0
         
-        logger.info(f"Pipelines to execute: {pipelines_to_run}")
-        
-        # Process each pipeline
-        all_results = {}
-        all_rv_stats = []  # Accumulate detailed statistics
-        
-        for pipeline_name in pipelines_to_run:
-            if pipeline_name not in config['pipelines']:
-                logger.warning(f"Pipeline '{pipeline_name}' not found. Skipping.")
-                continue
-            
-            pipeline_config = config['pipelines'][pipeline_name]
-            
-            if not pipeline_config.get('enabled', True):
-                logger.info(f"Pipeline '{pipeline_name}' disabled. Skipping.")
-                continue
-            
-            logger.info(f"Processing pipeline: {pipeline_name}")
-            
-            # Create processing configuration
-            rv_config = {
-                'asset_type': pipeline_config['asset_type'],
-                'symbols': pipeline_config['symbols'],
-                'file_format': config['file_format'],
-                'max_workers': min(4, max(1, os.cpu_count() - 1)),
-                's3_bucket': config['s3_bucket']
+        # Process stocks if enabled
+        if stocks_enabled:
+            logger.info("Processing STOCKS asset type...")
+            stocks_config = {
+                'asset_type': "stocks",
+                'symbols': stocks_symbols,
+                'file_format': file_format,
+                'max_workers': max_workers,
+                's3_bucket': s3_bucket
             }
-            
-            # Process symbols
-            results = process_all_symbols_threaded(rv_config)
-            all_results[pipeline_name] = results
-            
-            # Accumulate statistics for Slack notification
-            all_rv_stats.extend(results)
+            stocks_results = process_all_symbols_threaded(stocks_config)
+            all_results.extend(stocks_results)
+            total_processed += sum(r["processed"] for r in stocks_results)
+            total_errors += sum(r["errors"] for r in stocks_results)
+            total_files += sum(r.get("total_files", 0) for r in stocks_results)
+            total_skipped += sum(r.get("skipped", 0) for r in stocks_results)
+        
+        # Process forex if enabled
+        if forex_enabled:
+            logger.info("Processing FOREX asset type...")
+            forex_config = {
+                'asset_type': "forex",
+                'symbols': forex_symbols,
+                'file_format': file_format,
+                'max_workers': max_workers,
+                's3_bucket': s3_bucket
+            }
+            forex_results = process_all_symbols_threaded(forex_config)
+            all_results.extend(forex_results)
+            total_processed += sum(r["processed"] for r in forex_results)
+            total_errors += sum(r["errors"] for r in forex_results)
+            total_files += sum(r.get("total_files", 0) for r in forex_results)
+            total_skipped += sum(r.get("skipped", 0) for r in forex_results)
+        
+        # Process futures if enabled
+        if futures_enabled:
+            logger.info("Processing FUTURES asset type...")
+            futures_config = {
+                'asset_type': "futures",
+                'symbols': futures_symbols,
+                'file_format': file_format,
+                'max_workers': max_workers,
+                's3_bucket': s3_bucket
+            }
+            futures_results = process_all_symbols_threaded(futures_config)
+            all_results.extend(futures_results)
+            total_processed += sum(r["processed"] for r in futures_results)
+            total_errors += sum(r["errors"] for r in futures_results)
+            total_files += sum(r.get("total_files", 0) for r in futures_results)
+            total_skipped += sum(r.get("skipped", 0) for r in futures_results)
         
         # Final summary
         end_time = datetime.now()
         duration = end_time - start_time
         
+        successful_symbols = [r for r in all_results if r['errors'] == 0]
+        success_rate = len(successful_symbols) / len(all_results) * 100 if all_results else 0
+        
         logger.info("FINAL SUMMARY")
         logger.info(f"Total execution time: {duration}")
+        logger.info(f"Pipeline: {pipeline_name}")
+        logger.info(f"Total processed: {total_processed}, Errors: {total_errors}, Success rate: {success_rate:.0f}%")
         
-        for pipeline_name, results in all_results.items():
-            total_processed = sum(r["processed"] for r in results)
-            total_errors = sum(r["errors"] for r in results)
-            success_rate = len([r for r in results if r['errors'] == 0]) / len(results) * 100 if results else 0
-            
-            status = "SUCCESS" if total_errors == 0 else "WARNING"
-            logger.info(f"{pipeline_name}: {status} - {total_processed} records processed, {total_errors} errors, {success_rate:.0f}% success rate")
-        
-        # Prepare Slack notification message
-        successful_pipelines = sum(1 for pipeline_name, results in all_results.items() 
-                                  if sum(r["errors"] for r in results) == 0)
-        failed_pipelines = len(all_results) - successful_pipelines
-        
-        # Calculate detailed statistics from accumulated RV results
-        total_records_processed = sum(r.get("processed", 0) for r in all_rv_stats)
-        total_records_skipped = sum(r.get("skipped", 0) for r in all_rv_stats)
-        total_records_errors = sum(r.get("errors", 0) for r in all_rv_stats)
-        total_files_analyzed = sum(r.get("total_files", 0) for r in all_rv_stats)
-        total_symbols = len(all_rv_stats)
-        
-        # Determine exit code
-        total_errors = sum(sum(r["errors"] for r in results) for results in all_results.values())
+        # Determine status
         if total_errors == 0:
-            logger.info("ALL PIPELINES COMPLETED SUCCESSFULLY!")
+            logger.info("ALL PROCESSING COMPLETED SUCCESSFULLY!")
             status_emoji = "✅"
             status_text = "SUCCESS"
         else:
             logger.warning("SOME PROCESSING ERRORS OCCURRED!")
-            status_emoji = "⚠️" if failed_pipelines < successful_pipelines else "❌"
-            status_text = "PARTIAL FAILURE" if successful_pipelines > 0 else "FAILURE"
+            status_emoji = "⚠️" if total_errors < total_processed else "❌"
+            status_text = "PARTIAL FAILURE" if total_processed > 0 else "FAILURE"
         
-        # Create Slack message - build as list and join
-        message_parts = [
-            f"{status_emoji} **REALIZED VARIANCE COMPUTATION COMPLETED** {status_emoji}",
-            "",
-            f"**Status:** {status_text}",
-            f"**Duration:** {str(duration).split('.')[0]}",
-            f"**Pipelines:** {successful_pipelines}/{len(all_results)} successful",
-            "",
-            "**Pipeline Results:**"
-        ]
+        # Create Slack message
+        slack_message = f"{status_emoji} **REALIZED VARIANCE COMPUTATION COMPLETED** {status_emoji}\n\n"
+        slack_message += f"**Status:** {status_text}\n"
+        slack_message += f"**Pipeline:** {pipeline_name}\n"
+        slack_message += f"**Duration:** {str(duration).split('.')[0]}\n"
+        slack_message += f"**Total Symbols:** {len(all_results)}\n\n"
         
-        # Add pipeline results
-        for pipeline_name, results in all_results.items():
-            total_pipeline_errors = sum(r["errors"] for r in results)
-            result_emoji = "✅" if total_pipeline_errors == 0 else "❌"
-            message_parts.append(f"{result_emoji} {pipeline_name}: {'SUCCESS' if total_pipeline_errors == 0 else 'FAILED'}")
+        # Add enabled asset types info
+        if enabled_types:
+            slack_message += f"**Enabled Types:** {', '.join(enabled_types)}\n\n"
         
-        # Add detailed file statistics if available
-        if all_rv_stats:
-            message_parts.extend([
-                "",
-                "**Processing Summary:**",
-                f"📁 Total files analyzed: {total_files_analyzed}",
-                f"✅ Records processed: {total_records_processed}",
-                f"⏭️ Records skipped (duplicates): {total_records_skipped}",
-                f"❌ Processing errors: {total_records_errors}",
-                f"🏷️ Symbols processed: {total_symbols}"
-            ])
-            
-            if total_files_analyzed > 0:
-                success_rate = (total_records_processed / total_files_analyzed) * 100
-                message_parts.append(f"📊 Success rate: {success_rate:.1f}%")
+        slack_message += "**Processing Summary:**"
+        slack_message += f"\n📁 Total files: {total_files}"
+        slack_message += f"\n✅ Records processed: {total_processed}"
+        slack_message += f"\n⏭️ Records skipped: {total_skipped}"
+        slack_message += f"\n❌ Processing errors: {total_errors}"
+        slack_message += f"\n🏷️ Symbols processed: {len(all_results)}"
         
-        message_parts.extend([
-            "",
-            f"**Timestamp:** {end_time.strftime('%Y-%m-%d %H:%M:%S')}"
-        ])
+        if total_files > 0:
+            slack_message += f"\n📊 Success rate: {success_rate:.1f}%"
         
-        slack_message = "\n".join(message_parts)
+        slack_message += f"\n\n**Timestamp:** {end_time.strftime('%Y-%m-%d %H:%M:%S')}"
         
         # Send Slack notification
         try:
@@ -1574,11 +1578,6 @@ def main():
         except Exception as e:
             logger.warning(f"Error sending Slack notification: {e}")
         
-        # Exit with appropriate code
-        if total_errors == 0:
-            sys.exit(0)
-        else:
-            pass  # Continue to any cleanup or additional processing
             
     except Exception as e:
         logger.error(f"CRITICAL ERROR: {e}")

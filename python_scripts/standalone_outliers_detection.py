@@ -42,13 +42,13 @@ thread_local = threading.local()
 def format_log_header(type, message):
     '''Format a header to make certain types of messages more visible'''
     if type == "PHASE":
-        return f"\n{'='*30} {message} {'='*30}"
+        return f"\\n{'='*30} {message} {'='*30}"
     elif type == "PROCESS":
-        return f"\n[PROCESS] {'-'*10} {message} {'-'*10}"
+        return f"\\n[PROCESS] {'-'*10} {message} {'-'*10}"
     elif type == "STEP":
-        return f"\n  [STEP] {message}"
+        return f"\\n  [STEP] {message}"
     elif type == "COMPLETE":
-        return f"\n[COMPLETE] {'-'*10} {message} {'-'*10}"
+        return f"\\n[COMPLETE] {'-'*10} {message} {'-'*10}"
     elif type == "INFO":
         return f"[INFO] {message}"
     elif type == "WARNING":
@@ -127,10 +127,12 @@ def trimmed_mean_and_std(x, delta):
     sorted_x = np.sort(x)
     if trim_count == 0:
        trimmed_x = sorted_x
+       print('no trimming on the window', len(trimmed_x))
     else:
        trimmed_x = sorted_x[trim_count:-trim_count]
+       #print(len(trimmed_x))
     mean = np.mean(trimmed_x)
-    std = np.sqrt(np.sum((trimmed_x - mean) ** 2) / (len(trimmed_x) - 1))
+    std = np.sqrt(np.sum((trimmed_x - mean) ** 2) / (len(trimmed_x) - 1))  # Manually calculate std with ddof=1
     return mean, std
 
 @njit 
@@ -150,20 +152,24 @@ def k_neighborhood_excluding_i(prices, i, k):
     
     return neighborhood
 
-@njit
+@njit#(parallel=True)
 def detect_outliers_numba(prices):
+
     n = len(prices)
-    delta = 0.1
+    delta =0.1
     gamma = 0.06
     k = 120
 
     outliers = []
+    #result = np.copy(prices)
     
     for i in prange(n):
         neighborhood = k_neighborhood_excluding_i(prices, i, k)
         trimmed_mean_neighborhood, trimmed_std_neighborhood = trimmed_mean_and_std(neighborhood, delta)
         if abs(prices[i] - trimmed_mean_neighborhood) >= (3 * trimmed_std_neighborhood + gamma):
-            outliers.append(i)
+            #outliers.append(i-1) # Se input ret
+            outliers.append(i) # Se input prices
+            #result[i] = np.nan 
     
     return outliers
 
@@ -518,62 +524,75 @@ def process_all_symbols(symbols, asset_type, file_format, max_workers=None):
 # Configuration and Main Functions
 # ====================================================================
 
-def load_config():
-    """Load configuration with embedded symbol lists"""
-    # Resolve environment variables  
-    base_dir = wmill.get_variable("u/niccolosalvini27/BASE_DIR")
-
-    # The entire configuration as a Python dictionary
-    config = {
-        "general": {
-            "base_dir": f"{base_dir}/data", 
-            "file_format": "parquet",
-            "outliers_threads_max": 8
-        },
-        "pipelines": {
-            "stocks_batch1": {
-                "enabled": True,
-                "asset_type": "stocks",
-                "symbols": ["GE", "JNJ"],
-                "steps": ["outliers"]
-            },
-            "stocks_batch2": {
-                "enabled": False,
-                "asset_type": "stocks", 
-                "symbols": [],
-                "steps": ["outliers"]
-            },
-            "ETFs": {
-                "enabled": False,
-                "asset_type": "ETFs",
-                "symbols": [],
-                "steps": ["outliers"]
-            }
-        }
-    }
-            
-    return config
-
-def main():
-    parser = argparse.ArgumentParser(description='Standalone Outliers Detection for ForVARD Project')
-    parser.add_argument('--pipelines', nargs='+', help='Pipelines to run (e.g., stocks_batch1 ETFs)')
-    parser.add_argument('--verbose', action='store_true', help='Enable verbose logging')
+def main(
+    pipelines=None,
+    file_format="parquet",
+    outliers_threads_max=8,
+    stocks_enabled=True,
+    stocks_symbols=["MDT", "AAPL", "ADBE", "AMD", "AMZN", "AXP", "BA", "CAT", "COIN", "CSCO", "DIS", "EBAY",
+                "GE", "GOOGL", "GS", "HD", "IBM", "INTC", "JNJ", "JPM", "KO", "MCD", "META", "MMM",
+                "MSFT", "NFLX", "NKE", "NVDA", "ORCL", "PG", "PM", "PYPL", "SHOP", "SNAP", "SPOT", "TSLA",
+                "UBER", "V", "WMT", "XOM", "ZM", "ABBV", "ABT", "ACN", "AIG", "AMGN", "AMT", "AVGO", "BAC",
+                "BK", "BKNG", "BLK", "BMY", "BRK.B", "C", "CHTR", "CL", "CMCSA", "COF", "COP", "COST",
+                "CRM", "CVS", "CVX", "DE", "DHR", "DOW", "DUK", "EMR", "F", "FDX", "GD", "GILD", "GM",
+                "GOOG", "HON", "INTU", "KHC", "LIN", "LLY", "LMT", "LOW", "MA", "MDLZ", "MET", "MO", "MRK",
+                "MS", "NEE", "PEP", "PFE", "QCOM", "RTX", "SBUX", "SCHW", "SO", "SPG", "T", "TGT", "TMO",
+                "TMUS", "TXN", "UNH", "UNP", "UPS", "USB", "VZ", "WFC"],
+    etfs_enabled=True,
+    etfs_symbols=["AGG", "BND", "GLD", "SLV", "SUSA", "EFIV", "ESGV", "ESGU", "AFTY", "MCHI", "EWH", "EEM",
+                "IEUR", "VGK", "FLCH", "EWJ", "NKY", "EWZ", "EWC", "EWU", "EWI", "EWP", "ACWI", "IOO", "GWL",
+                "VEU", "IJH", "MDY", "IVOO", "IYT", "XTN", "XLI", "XLU", "VPU", "SPSM", "IJR", "VIOO", "QQQ",
+                "ICLN", "ARKK", "SPLG", "SPY", "VOO", "IYY", "VTI", "DIA"],
+    verbose=False
+):
+    """
+    Standalone Outliers Detection for ForVARD Project
     
-    args = parser.parse_args()
-    
+    Args:
+        pipelines: List of pipelines to run (e.g., ['stocks', 'ETFs'])
+        file_format: File format to process ('parquet' or 'txt')
+        outliers_threads_max: Maximum number of threads for outliers processing
+        stocks_enabled: Enable stocks pipeline
+        stocks_symbols: List of symbols for stocks
+        etfs_enabled: Enable ETFs pipeline
+        etfs_symbols: List of symbols for ETFs
+        verbose: Enable verbose logging
+    """
     start_time = datetime.now()
     safe_print(f"OUTLIERS PROCESSING START: {start_time.strftime('%Y-%m-%d %H:%M:%S')}", "PHASE")
     
     try:
-        config = load_config()
+        # Build configuration from arguments
+        config = {
+            "general": {
+                "file_format": file_format,
+                "outliers_threads_max": outliers_threads_max
+            },
+            "pipelines": {
+                "stocks": {
+                    "enabled": stocks_enabled,
+                    "asset_type": "stocks",
+                    "symbols": stocks_symbols,
+                    "steps": ["outliers"]
+                },
+                "ETFs": {
+                    "enabled": etfs_enabled,
+                    "asset_type": "ETFs",
+                    "symbols": etfs_symbols,
+                    "steps": ["outliers"]
+                }
+            }
+        }
         
-        if args.pipelines:
-            pipelines_to_run = args.pipelines
+        # Determine which pipelines to run
+        if pipelines:
+            pipelines_to_run = pipelines
         else:
             pipelines_to_run = [name for name, conf in config['pipelines'].items() if conf.get('enabled', True)]
         
         if not pipelines_to_run:
             safe_print("No pipeline to run. Check configuration.", "ERROR")
+            return
         
         safe_print(f"Pipelines to execute: {pipelines_to_run}", "INFO")
         
@@ -652,52 +671,39 @@ def main():
         total_symbols = len(all_outliers_stats)
         
         if all(results.values()):
-            safe_print("\nALL PIPELINES SUCCESSFULLY COMPLETED!", "PHASE")
+            safe_print("\\nALL PIPELINES SUCCESSFULLY COMPLETED!", "PHASE")
             status_emoji = "✅"
             status_text = "SUCCESS"
         else:
-            safe_print("\nSOME PIPELINES FAILED!", "PHASE")
+            safe_print("\\nSOME PIPELINES FAILED!", "PHASE")
             status_emoji = "⚠️" if failed_pipelines < successful_pipelines else "❌"
             status_text = "PARTIAL FAILURE" if successful_pipelines > 0 else "FAILURE"
         
-        # Create Slack message - build as list and join
-        message_parts = [
-            f"{status_emoji} **OUTLIERS DETECTION COMPLETED** {status_emoji}",
-            "",
-            f"**Status:** {status_text}",
-            f"**Duration:** {str(total_duration).split('.')[0]}",
-            f"**Pipelines:** {successful_pipelines}/{len(results)} successful",
-            "",
-            "**Pipeline Results:**"
-        ]
-        
-        # Add pipeline results
+        # Create Slack message
+        slack_message = f"{status_emoji} **OUTLIERS DETECTION COMPLETED** {status_emoji}\n\n"
+        slack_message += f"**Status:** {status_text}\n"
+        slack_message += f"**Duration:** {str(total_duration).split('.')[0]}\n"
+        slack_message += f"**Pipelines:** {successful_pipelines}/{len(results)} successful\n\n"
+        slack_message += "**Pipeline Results:**"
+
         for pipeline, success in results.items():
             result_emoji = "✅" if success else "❌"
-            message_parts.append(f"{result_emoji} {pipeline}: {'SUCCESS' if success else 'FAILED'}")
+            slack_message += f"\n{result_emoji} {pipeline}: {'SUCCESS' if success else 'FAILED'}"
         
         # Add detailed file statistics if available
         if all_outliers_stats:
-            message_parts.extend([
-                "",
-                "**File Processing Summary:**",
-                f"📁 Total files analyzed: {total_files_analyzed}",
-                f"✅ Successfully processed: {total_files_processed}",
-                f"⏭️ Skipped (already processed): {total_files_skipped}",
-                f"❌ Errors: {total_files_errors}",
-                f"🏷️ Symbols processed: {total_symbols}"
-            ])
+            slack_message += "\n\n**File Processing Summary:**"
+            slack_message += f"\n📁 Total files analyzed: {total_files_analyzed}"
+            slack_message += f"\n✅ Successfully processed: {total_files_processed}"
+            slack_message += f"\n⏭️ Skipped (already processed): {total_files_skipped}"
+            slack_message += f"\n❌ Errors: {total_files_errors}"
+            slack_message += f"\n🏷️ Symbols processed: {total_symbols}"
             
             if total_files_analyzed > 0:
                 success_rate = (total_files_processed / total_files_analyzed) * 100
-                message_parts.append(f"📊 Success rate: {success_rate:.1f}%")
+                slack_message += f"\n📊 Success rate: {success_rate:.1f}%"
         
-        message_parts.extend([
-            "",
-            f"**Timestamp:** {end_time.strftime('%Y-%m-%d %H:%M:%S')}"
-        ])
-        
-        slack_message = "\n".join(message_parts)
+        slack_message += f"\n\n**Timestamp:** {end_time.strftime('%Y-%m-%d %H:%M:%S')}"
         
         # Send Slack notification
         try:
@@ -705,8 +711,7 @@ def main():
         except Exception as e:
             safe_print(f"Error sending Slack notification: {e}", "WARNING")
 
+        
+
     except Exception as e:
         safe_print(f"CRITICAL ERROR: {e}", "ERROR")
-
-if __name__ == "__main__":
-    main()
