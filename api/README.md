@@ -121,11 +121,11 @@ Default admin credentials:
 
 ## Data Loading
 
-To load volatility data from CSV:
+To load users and respective roles and permissions:
 
 ```bash
 source setup_env.sh
-poetry run python app/src/init_rv_data.py --file path/to/your/data.csv
+poetry run python app/src/init_users.py --host volare.unime.it --port 5432 --dbname forvarddb_dev --user forvarduser --password WsUpwXjEA7HHidmL8epF
 ```
 
 ## Development
