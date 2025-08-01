@@ -61,7 +61,9 @@ def send_slack_notification(message_text):
         logger.warning(f"Error sending Slack notification: {e}")
 
 
-def create_backup_directory(base_path="/backup"):
+# ... existing code ...
+
+def create_backup_directory(base_path="/backup"):  # ← Cambia qui
     """Create backup directory structure"""
     timestamp = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
     
@@ -80,7 +82,7 @@ def create_backup_directory(base_path="/backup"):
 
 def backup_database(host, port, user, password, database, output_file, logger):
     """
-    Create a database backup using docker exec to run pg_dump inside the PostgreSQL container
+    Create a database backup using the PostgreSQL container directly
     
     Args:
         host: Database host
@@ -95,21 +97,20 @@ def backup_database(host, port, user, password, database, output_file, logger):
         logger.info(f"Starting backup for database: {database}")
         logger.info(f"Output file: {output_file}")
         
-        # Use docker exec to run pg_dump inside the PostgreSQL container
+        # Use the PostgreSQL container directly to run pg_dump
         # This ensures we use the correct pg_dump version that matches the PostgreSQL server
         docker_cmd = [
             'docker', 'exec',
-            'forvard_app_postgres',  # Container name from docker-compose
+            'forvard_app_postgres',  # Use the PostgreSQL container directly
             'pg_dump',
-            f'--host=localhost',  # Use localhost since we're inside the container
-            f'--port=5432',
-            f'--username={user}',
+            '--host=localhost',  # Use localhost since we're inside the container
+            '--port=5432',
+            '--username=' + user,
             '--verbose',
             '--clean',
             '--no-owner',
             '--no-privileges',
-            '--format=custom',
-            f'--file=/tmp/{os.path.basename(output_file)}',  # Save to /tmp inside container
+            '--format=plain',  # Use plain SQL format
             database
         ]
         
@@ -117,40 +118,24 @@ def backup_database(host, port, user, password, database, output_file, logger):
         env = os.environ.copy()
         env['PGPASSWORD'] = password
         
-        # Execute docker command
-        result = subprocess.run(
-            docker_cmd,
-            env=env,
-            capture_output=True,
-            text=True,
-            timeout=3600  # 1 hour timeout
-        )
+        # Execute docker command and write output directly to file
+        with open(output_file, 'w') as f:
+            result = subprocess.run(
+                docker_cmd,
+                stdout=f,
+                stderr=subprocess.PIPE,
+                env=env,
+                text=True,
+                timeout=3600  # 1 hour timeout
+            )
         
         if result.returncode == 0:
-            # Copy the file from the container to the host
-            copy_cmd = [
-                'docker', 'cp',
-                f'forvard_app_postgres:/tmp/{os.path.basename(output_file)}',
-                output_file
-            ]
-            
-            copy_result = subprocess.run(
-                copy_cmd,
-                capture_output=True,
-                text=True,
-                timeout=300  # 5 minutes timeout for copy
-            )
-            
-            if copy_result.returncode == 0:
-                # Get file size
-                file_size = os.path.getsize(output_file)
-                file_size_mb = file_size / (1024 * 1024)
-                logger.info(f"Backup completed successfully for {database}")
-                logger.info(f"File size: {file_size_mb:.2f} MB")
-                return True, file_size_mb
-            else:
-                logger.error(f"Failed to copy backup file from container: {copy_result.stderr}")
-                return False, 0
+            # Get file size
+            file_size = os.path.getsize(output_file)
+            file_size_mb = file_size / (1024 * 1024)
+            logger.info(f"Backup completed successfully for {database}")
+            logger.info(f"File size: {file_size_mb:.2f} MB")
+            return True, file_size_mb
         else:
             logger.error(f"Backup failed for {database}")
             logger.error(f"Error: {result.stderr}")
@@ -164,7 +149,7 @@ def backup_database(host, port, user, password, database, output_file, logger):
         return False, 0
 
 
-def cleanup_old_backups(base_path="/backup", keep_days=7):
+def cleanup_old_backups(base_path="/backup", keep_days=7):  # ← Cambia qui
     """
     Clean up old backup directories, keeping only the last N days
     
@@ -204,7 +189,7 @@ def main(
     password="WsUpwXjEA7HHidmL8epF",
     dev_database="forvarddb_dev",
     prod_database="forvarddb",
-    backup_base_path="/backup",
+    backup_base_path="/backup",  # ← Cambia qui
     keep_backups_days=7,
     enable_cleanup=True
 ):
@@ -218,7 +203,7 @@ def main(
         password: Database password
         dev_database: Development database name
         prod_database: Production database name
-        backup_base_path: Base path for backups
+        backup_base_path: Base path for backups (changed to /backup)
         keep_backups_days: Number of days to keep old backups
         enable_cleanup: Whether to enable cleanup of old backups
     """
@@ -237,7 +222,7 @@ def main(
         backup_results = {}
         
         # Backup development database
-        dev_output_file = os.path.join(dev_dir, f"{dev_database}_{timestamp}.dump")
+        dev_output_file = os.path.join(dev_dir, f"{dev_database}_{timestamp}.sql")
         dev_success, dev_size = backup_database(
             host, port, user, password, dev_database, dev_output_file, logger
         )
@@ -248,7 +233,7 @@ def main(
         }
         
         # Backup production database
-        prod_output_file = os.path.join(prod_dir, f"{prod_database}_{timestamp}.dump")
+        prod_output_file = os.path.join(prod_dir, f"{prod_database}_{timestamp}.sql")
         prod_success, prod_size = backup_database(
             host, port, user, password, prod_database, prod_output_file, logger
         )
@@ -323,9 +308,3 @@ def main(
         send_slack_notification(slack_message)
         
         raise
-
-
-if __name__ == "__main__":
-    # Example usage
-    result = main()
-    print(f"Backup completed: {result}") 

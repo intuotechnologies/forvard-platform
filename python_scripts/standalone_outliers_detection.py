@@ -132,7 +132,7 @@ def trimmed_mean_and_std(x, delta):
        trimmed_x = sorted_x[trim_count:-trim_count]
        #print(len(trimmed_x))
     mean = np.mean(trimmed_x)
-    std = np.sqrt(np.sum((trimmed_x - mean) ** 2) / (len(trimmed_x) - 1))  # Manually calculate std with ddof=1
+    std = np.sqrt(np.sum((trimmed_x - mean) * 2) / (len(trimmed_x) - 1))  # Manually calculate std with ddof=1
     return mean, std
 
 @njit 
@@ -430,6 +430,12 @@ def process_single_symbol(s3_processor, symbol, asset_type, file_format, max_wor
         if start_date:
             files = [f for f in files if f.replace('.txt', '').replace('.parquet', '') >= start_date]
         
+        # Limit number of files to process to avoid overload
+        max_files_per_symbol = 100  # Limit to 100 files per symbol to avoid memory issues
+        if len(files) > max_files_per_symbol:
+            logger.warning(f"Limiting {symbol} to {max_files_per_symbol} files (from {len(files)} total)")
+            files = files[:max_files_per_symbol]
+        
         if not files:
             logger.info(f"No new files to process for {symbol}")
             return {"symbol": symbol, "processed": 0, "skipped": 0, "errors": 0, "total_files": 0}
@@ -478,7 +484,7 @@ def process_all_symbols(symbols, asset_type, file_format, max_workers=None):
     
     # Determine optimal number of workers
     if max_workers is None:
-        max_workers = min(len(symbols), os.cpu_count() or 4, 8)  # Max 8 workers
+        max_workers = min(len(symbols), os.cpu_count() or 4, 4)  # Max 4 workers per evitare sovraccarico
     
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         # Submit each symbol for processing
@@ -527,7 +533,7 @@ def process_all_symbols(symbols, asset_type, file_format, max_workers=None):
 def main(
     pipelines=None,
     file_format="parquet",
-    outliers_threads_max=8,
+    outliers_threads_max=4,  # Ridotto da 8 a 4 per evitare sovraccarico
     stocks_enabled=True,
     stocks_symbols=["MDT", "AAPL", "ADBE", "AMD", "AMZN", "AXP", "BA", "CAT", "COIN", "CSCO", "DIS", "EBAY",
                 "GE", "GOOGL", "GS", "HD", "IBM", "INTC", "JNJ", "JPM", "KO", "MCD", "META", "MMM",
@@ -680,11 +686,11 @@ def main(
             status_text = "PARTIAL FAILURE" if successful_pipelines > 0 else "FAILURE"
         
         # Create Slack message
-        slack_message = f"{status_emoji} **OUTLIERS DETECTION COMPLETED** {status_emoji}\n\n"
-        slack_message += f"**Status:** {status_text}\n"
-        slack_message += f"**Duration:** {str(total_duration).split('.')[0]}\n"
-        slack_message += f"**Pipelines:** {successful_pipelines}/{len(results)} successful\n\n"
-        slack_message += "**Pipeline Results:**"
+        slack_message = f"{status_emoji} *OUTLIERS DETECTION COMPLETED* {status_emoji}\n\n"
+        slack_message += f"*Status:* {status_text}\n"
+        slack_message += f"*Duration:* {str(total_duration).split('.')[0]}\n"
+        slack_message += f"*Pipelines:* {successful_pipelines}/{len(results)} successful\n\n"
+        slack_message += "*Pipeline Results:*"
 
         for pipeline, success in results.items():
             result_emoji = "✅" if success else "❌"
@@ -692,7 +698,7 @@ def main(
         
         # Add detailed file statistics if available
         if all_outliers_stats:
-            slack_message += "\n\n**File Processing Summary:**"
+            slack_message += "\n\n*File Processing Summary:*"
             slack_message += f"\n📁 Total files analyzed: {total_files_analyzed}"
             slack_message += f"\n✅ Successfully processed: {total_files_processed}"
             slack_message += f"\n⏭️ Skipped (already processed): {total_files_skipped}"
@@ -703,7 +709,7 @@ def main(
                 success_rate = (total_files_processed / total_files_analyzed) * 100
                 slack_message += f"\n📊 Success rate: {success_rate:.1f}%"
         
-        slack_message += f"\n\n**Timestamp:** {end_time.strftime('%Y-%m-%d %H:%M:%S')}"
+        slack_message += f"\n\n*Timestamp:* {end_time.strftime('%Y-%m-%d %H:%M:%S')}"
         
         # Send Slack notification
         try:

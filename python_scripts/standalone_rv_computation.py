@@ -840,7 +840,7 @@ class S3DataProcessor:
                 db_config = {
                     'host': wmill.get_variable("u/niccolosalvini27/DB_HOST") or 'volare.unime.it',
                     'port': int(wmill.get_variable("u/niccolosalvini27/DB_PORT") or 5432),
-                    'database': wmill.get_variable("u/niccolosalvini27/DB_NAME_DEV") or 'forvarddb_dev',
+                    'database': wmill.get_variable("u/niccolosalvini27/DB_NAME") or 'forvarddb',
                     'user': wmill.get_variable("u/niccolosalvini27/DB_USER") or 'forvarduser',
                     'password': wmill.get_variable("u/niccolosalvini27/DB_PASSWORD") or 'WsUpwXjEA7HHidmL8epF'
                 }
@@ -849,7 +849,7 @@ class S3DataProcessor:
                 db_config = {
                     'host': wmill.get_variable("u/niccolosalvini27/DB_HOST") or 'forvard_app_postgres',
                     'port': int(wmill.get_variable("u/niccolosalvini27/DB_PORT") or 5432),
-                    'database': wmill.get_variable("u/niccolosalvini27/DB_NAME_DEV") or 'forvarddb_dev',
+                    'database': wmill.get_variable("u/niccolosalvini27/DB_NAME") or 'forvarddb',
                     'user': wmill.get_variable("u/niccolosalvini27/DB_USER") or 'forvarduser',
                     'password': wmill.get_variable("u/niccolosalvini27/DB_PASSWORD") or 'WsUpwXjEA7HHidmL8epF'
                 }
@@ -1412,12 +1412,14 @@ def main(
     
     # Asset type configuration - TRUE/FALSE per ogni tipo
     stocks_enabled=True,
-    stocks_symbols=["GE", "JNJ"],
-    forex_enabled=False,
-    forex_symbols=["EURUSD", "JPYUSD"],
-    futures_enabled=False,
-    futures_symbols=["CL", "GC"],
+    stocks_symbols=["MDT", "AAPL", "ADBE", "AMD", "AMZN", "AXP", "BA", "CAT", "COIN", "CSCO", "DIS", "EBAY", "GE", "GOOGL", "GS", "HD", "IBM", "INTC", "JNJ", "JPM", "KO", "MCD", "META", "MMM", "MSFT", "NFLX", "NKE", "NVDA", "ORCL", "PG", "PM", "PYPL", "SHOP", "SNAP", "SPOT", "TSLA", "UBER", "V", "WMT", "XOM", "ZM", "ABBV", "ABT", "ACN", "AIG", "AMGN", "AMT", "AVGO", "BAC", "BK", "BKNG", "BLK", "BMY", "BRK.B", "C", "CHTR", "CL", "CMCSA", "COF", "COP", "COST", "CRM", "CVS", "CVX", "DE", "DHR", "DOW", "DUK", "EMR", "F", "FDX", "GD", "GILD", "GM", "GOOG", "HON", "INTU", "KHC", "LIN", "LLY", "LMT", "LOW", "MA", "MDLZ", "MET", "MO", "MRK", "MS", "NEE", "PEP", "PFE", "QCOM", "RTX", "SBUX", "SCHW", "SO", "SPG", "T", "TGT", "TMO", "TMUS", "TXN", "UNH", "UNP", "UPS", "USB", "VZ", "WFC"],
+    forex_enabled=True,
+    forex_symbols=[  "EURUSD", "GBPUSD", "AUDUSD", "CADUSD", "JPYUSD", "CHFUSD", "SGDUSD", "HKDUSD", "KRWUSD", "INRUSD", "RUBUSD", "BRLUSD"],
+    futures_enabled=True,
+    futures_symbols=[  "ES", "CL", "GC", "NG", "NQ", "TY", "FV", "EU", "SI", "C", "W", "VX"],
     
+    # MANCANO GLI ETF
+
     # Processing settings
     max_workers=4,
     file_format="parquet",
@@ -1451,7 +1453,7 @@ def main(
     try:
         # Get S3 bucket from Windmill if not provided
         if s3_bucket is None:
-            s3_bucket = wmill.get_variable("u/niccolosalvini27/S3_BUCKET_DEV")
+            s3_bucket = wmill.get_variable("u/niccolosalvini27/S3_BUCKET")
         
         # Log which asset types are enabled
         enabled_types = []
@@ -1550,17 +1552,17 @@ def main(
             status_text = "PARTIAL FAILURE" if total_processed > 0 else "FAILURE"
         
         # Create Slack message
-        slack_message = f"{status_emoji} **REALIZED VARIANCE COMPUTATION COMPLETED** {status_emoji}\n\n"
-        slack_message += f"**Status:** {status_text}\n"
-        slack_message += f"**Pipeline:** {pipeline_name}\n"
-        slack_message += f"**Duration:** {str(duration).split('.')[0]}\n"
-        slack_message += f"**Total Symbols:** {len(all_results)}\n\n"
+        slack_message = f"{status_emoji} *REALIZED VARIANCE COMPUTATION COMPLETED* {status_emoji}\n\n"
+        slack_message += f"*Status:* {status_text}\n"
+        slack_message += f"*Pipeline:* {pipeline_name}\n"
+        slack_message += f"*Duration:* {str(duration).split('.')[0]}\n"
+        slack_message += f"*Total Symbols:* {len(all_results)}\n\n"
         
         # Add enabled asset types info
         if enabled_types:
-            slack_message += f"**Enabled Types:** {', '.join(enabled_types)}\n\n"
+            slack_message += f"*Enabled Types:* {', '.join(enabled_types)}\n\n"
         
-        slack_message += "**Processing Summary:**"
+        slack_message += "*Processing Summary:*"
         slack_message += f"\n📁 Total files: {total_files}"
         slack_message += f"\n✅ Records processed: {total_processed}"
         slack_message += f"\n⏭️ Records skipped: {total_skipped}"
@@ -1570,7 +1572,7 @@ def main(
         if total_files > 0:
             slack_message += f"\n📊 Success rate: {success_rate:.1f}%"
         
-        slack_message += f"\n\n**Timestamp:** {end_time.strftime('%Y-%m-%d %H:%M:%S')}"
+        slack_message += f"\n\n*Timestamp:* {end_time.strftime('%Y-%m-%d %H:%M:%S')}"
         
         # Send Slack notification
         try:

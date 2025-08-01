@@ -1017,7 +1017,9 @@ class KibotDownloader:
             logger.info(f"Final Memory usage: {psutil.virtual_memory().percent}%")
             logger.info("==============================")
 
-            if self.config.generate_detailed_report: self._generate_detailed_report()
+            if self.config.generate_detailed_report: 
+                self._generate_detailed_report()
+                safe_print("Detailed report generated with failed dates for each tick", "INFO")
             return True
         except Exception as e:
             logger.error(f"Errore durante il download: {e}", exc_info=True)
@@ -1027,8 +1029,114 @@ class KibotDownloader:
             self.http_client.close_all()
     
     def _generate_detailed_report(self):
-        # Implementation for detailed report generation
-        pass
+        """Generate a detailed report of the operation with symbol analysis and discrepancy detection"""
+        try:
+            log_dir = os.path.join(self.config.base_dir, "logs")
+            os.makedirs(log_dir, exist_ok=True)
+            report_file = os.path.join(log_dir, f"report_{self.config.asset_type}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt")
+            
+            # Analizza i dati per simbolo
+            symbol_stats = {}
+            symbol_dates = {}
+            
+            for item_key, status_dict in self.item_status.items():
+                # Estrae simbolo e data dall'item_key (formato: SYMBOL_MM/DD/YYYY)
+                parts = item_key.split('_', 1)
+                if len(parts) == 2:
+                    symbol = parts[0]
+                    date = parts[1]
+                    
+                    if symbol not in symbol_stats:
+                        symbol_stats[symbol] = {'success': 0, 'no_data': 0, 'total': 0}
+                        symbol_dates[symbol] = {'success': [], 'no_data': []}
+                    
+                    symbol_stats[symbol]['total'] += 1
+                    
+                    if 'success' in status_dict:
+                        symbol_stats[symbol]['success'] += status_dict['success']
+                        symbol_dates[symbol]['success'].append(date)
+                    elif 'no_data' in status_dict:
+                        symbol_stats[symbol]['no_data'] += status_dict['no_data']
+                        symbol_dates[symbol]['no_data'].append(date)
+            
+            with open(report_file, 'w') as f:
+                f.write("===== REPORT DETTAGLIATO =====\n\n")
+                
+                # Statistiche generali
+                f.write("STATISTICHE GENERALI\n")
+                for key, value in self.stats.items():
+                    f.write(f"{key}: {value}\n")
+                
+                # Statistiche per simbolo
+                f.write("\n===== STATISTICHE PER SIMBOLO =====\n")
+                for symbol in sorted(symbol_stats.keys()):
+                    stats = symbol_stats[symbol]
+                    f.write(f"\n{symbol}:\n")
+                    f.write(f"  success: {stats['success']}\n")
+                    f.write(f"  no_data: {stats['no_data']}\n")
+                    f.write(f"  total: {stats['total']}\n")
+                
+                # Controllo discrepanze tra simboli
+                f.write("\n===== ANALISI DISCREPANZE =====\n")
+                
+                if len(symbol_stats) > 1:
+                    symbols = list(symbol_stats.keys())
+                    reference_symbol = symbols[0]
+                    ref_success_dates = set(symbol_dates[reference_symbol]['success'])
+                    ref_no_data_dates = set(symbol_dates[reference_symbol]['no_data'])
+                    
+                    discrepancies_found = False
+                    
+                    for symbol in symbols[1:]:
+                        curr_success_dates = set(symbol_dates[symbol]['success'])
+                        curr_no_data_dates = set(symbol_dates[symbol]['no_data'])
+                        
+                        # Trova differenze nei success
+                        success_only_in_ref = ref_success_dates - curr_success_dates
+                        success_only_in_curr = curr_success_dates - ref_success_dates
+                        
+                        # Trova differenze nei no_data
+                        no_data_only_in_ref = ref_no_data_dates - curr_no_data_dates
+                        no_data_only_in_curr = curr_no_data_dates - ref_no_data_dates
+                        
+                        if success_only_in_ref or success_only_in_curr or no_data_only_in_ref or no_data_only_in_curr:
+                            discrepancies_found = True
+                            f.write(f"\n WARNING: Discrepanze tra {reference_symbol} e {symbol}:\n")
+                            
+                            if success_only_in_ref:
+                                f.write(f"  SUCCESS solo in {reference_symbol}: {sorted(success_only_in_ref)}\n")
+                            if success_only_in_curr:
+                                f.write(f"  SUCCESS solo in {symbol}: {sorted(success_only_in_curr)}\n")
+                            if no_data_only_in_ref:
+                                f.write(f"  NO_DATA solo in {reference_symbol}: {sorted(no_data_only_in_ref)}\n")
+                            if no_data_only_in_curr:
+                                f.write(f"  NO_DATA solo in {symbol}: {sorted(no_data_only_in_curr)}\n")
+                    
+                    if not discrepancies_found:
+                        f.write(" Nessuna discrepanza trovata tra i simboli\n")
+                else:
+                    f.write("Un solo simbolo presente - controllo discrepanze non applicabile\n")
+                
+                # Dettaglio status per elemento (sezione originale)
+                f.write("\n===== DETTAGLIO STATUS PER ELEMENTO =====\n")
+                for item_key, status_dict in self.item_status.items():
+                    f.write(f"{item_key}: {status_dict}\n")
+            
+            logger.info(f"Detailed report generated in {report_file}")
+            
+            # Log delle discrepanze anche nella console se trovate
+            if len(symbol_stats) > 1:
+                symbols = list(symbol_stats.keys())
+                for i, symbol in enumerate(symbols):
+                    stats = symbol_stats[symbol]
+                    if i == 0:
+                        continue
+                    ref_stats = symbol_stats[symbols[0]]
+                    if stats['success'] != ref_stats['success'] or stats['no_data'] != ref_stats['no_data']:
+                        logger.warning(f"Discrepancy detected between {symbols[0]} and {symbol}")
+                        
+        except Exception as e:
+            logger.error(f"Error generating report: {e}")
 
     def download_adjustments(self):
         logger.info(f"Download adjustment data for {len(self.config.symbols)} symbols")
@@ -1233,6 +1341,11 @@ def download_worker(config_data, pipeline_name, symbols_batch, result_queue):
     asset_type = pipeline_config['asset_type']
     date_range = pipeline_config['date_range']
     
+    # Get credentials and base_dir from environment
+    kibot_user = wmill.get_variable("u/niccolosalvini27/KIBOT_USER")
+    kibot_password = wmill.get_variable("u/niccolosalvini27/KIBOT_PASSWORD")
+    base_dir = wmill.get_variable("u/niccolosalvini27/BASE_DIR").replace('\\', '/')
+    
     symbols_to_download = [
         s for s in symbols_batch 
         if not is_symbol_already_downloaded(s, date_range['start_date'], asset_type) and
@@ -1254,9 +1367,9 @@ def download_worker(config_data, pipeline_name, symbols_batch, result_queue):
         try:
             clean_kibot_logger()
             download_config = Config(
-                user=config_data['credentials']['kibot_user'],
-                pwd=config_data['credentials']['kibot_password'],
-                base_dir=config_data['general']['base_dir'],
+                user=kibot_user,
+                pwd=kibot_password,
+                base_dir=f"{base_dir}/data",
                 symbols=symbols_to_download,
                 start_date=date_range['start_date'],
                 end_date=date_range['end_date'],
@@ -1283,28 +1396,119 @@ def download_worker(config_data, pipeline_name, symbols_batch, result_queue):
             return False
 
 # --- Main execution block ---
-def main():
-    parser = argparse.ArgumentParser(description='Standalone Data Downloader for ForVARD Project')
-    parser.add_argument('--pipelines', nargs='+', help='Pipelines to run (e.g., stocks forex futures)')
-    # config argument is no longer used but kept for CLI compatibility
-    parser.add_argument('--config', help=argparse.SUPPRESS) 
-    parser.add_argument('--verbose', action='store_true', help='Enable verbose logging')
+def main(
+    pipelines=None,
+    file_format="parquet",
+    download_threads_max=4,
+    processing_threads_max=4,
+    stocks_enabled=True,
+    stocks_symbols=["MDT", "AAPL", "ADBE", "AMD", "AMZN", "AXP", "BA", "CAT", "COIN", "CSCO", "DIS", "EBAY",
+                "GE", "GOOGL", "GS", "HD", "IBM", "INTC", "JNJ", "JPM", "KO", "MCD", "META", "MMM",
+                "MSFT", "NFLX", "NKE", "NVDA", "ORCL", "PG", "PM", "PYPL", "SHOP", "SNAP", "SPOT", "TSLA",
+                "UBER", "V", "WMT", "XOM", "ZM", "ABBV", "ABT", "ACN", "AIG", "AMGN", "AMT", "AVGO", "BAC",
+                "BK", "BKNG", "BLK", "BMY", "BRK.B", "C", "CHTR", "CL", "CMCSA", "COF", "COP", "COST",
+                "CRM", "CVS", "CVX", "DE", "DHR", "DOW", "DUK", "EMR", "F", "FDX", "GD", "GILD", "GM",
+                "GOOG", "HON", "INTU", "KHC", "LIN", "LLY", "LMT", "LOW", "MA", "MDLZ", "MET", "MO", "MRK",
+                "MS", "NEE", "PEP", "PFE", "QCOM", "RTX", "SBUX", "SCHW", "SO", "SPG", "T", "TGT", "TMO",
+                "TMUS", "TXN", "UNH", "UNP", "UPS", "USB", "VZ", "WFC"],
+    etfs_enabled=True,
+    etfs_symbols=["AGG", "BND", "GLD", "SLV", "SUSA", "EFIV", "ESGV", "ESGU", "AFTY", "MCHI", "EWH", "EEM",
+                "IEUR", "VGK", "FLCH", "EWJ", "NKY", "EWZ", "EWC", "EWU", "EWI", "EWP", "ACWI", "IOO", "GWL",
+                "VEU", "IJH", "MDY", "IVOO", "IYT", "XTN", "XLI", "XLU", "VPU", "SPSM", "IJR", "VIOO", "QQQ",
+                "ICLN", "ARKK", "SPLG", "SPY", "VOO", "IYY", "VTI", "DIA"],
+    forex_enabled=True,
+    forex_symbols=["EURUSD", "GBPUSD", "AUDUSD", "CADUSD", "JPYUSD", "CHFUSD",
+                "SGDUSD", "HKDUSD", "KRWUSD", "INRUSD", "RUBUSD", "BRLUSD"],
+    futures_enabled=True,
+    futures_symbols=["ES", "CL", "GC", "NG", "NQ", "TY", "FV", "EU", "SI", "C", "W", "VX"],
+    start_date="01/01/2015",
+    end_date="07/17/2025",
+    verbose=False
+):
+    """
+    Standalone Data Downloader for ForVARD Project
     
-    args = parser.parse_args()
-    
+    Args:
+        pipelines: List of pipelines to run (e.g., ['stocks', 'ETFs'])
+        file_format: File format to process ('parquet' or 'txt')
+        download_threads_max: Maximum number of threads for download processing
+        processing_threads_max: Maximum number of threads for data processing
+        stocks_enabled: Enable stocks pipeline
+        stocks_symbols: List of symbols for stocks
+        etfs_enabled: Enable ETFs pipeline
+        etfs_symbols: List of symbols for ETFs
+        forex_enabled: Enable forex pipeline
+        forex_symbols: List of symbols for forex
+        futures_enabled: Enable futures pipeline
+        futures_symbols: List of symbols for futures
+        start_date: Start date for data download (MM/DD/YYYY format)
+        end_date: End date for data download (MM/DD/YYYY format)
+        verbose: Enable verbose logging
+    """
     start_time = datetime.now()
     safe_print(f"PIPELINE START: {start_time.strftime('%Y-%m-%d %H:%M:%S')}", "PHASE")
     
     try:
-        config = load_config()
+        # Build configuration from arguments
+        config = {
+            "general": {
+                "file_format": file_format,
+                "download_threads_max": download_threads_max,
+                "processing_threads_max": processing_threads_max
+            },
+            "pipelines": {
+                "stocks": {
+                    "enabled": stocks_enabled,
+                    "asset_type": "stocks",
+                    "symbols": stocks_symbols,
+                    "date_range": {
+                        "start_date": start_date,
+                        "end_date": end_date
+                    },
+                    "steps": ["download"]
+                },
+                "ETFs": {
+                    "enabled": etfs_enabled,
+                    "asset_type": "ETFs",
+                    "symbols": etfs_symbols,
+                    "date_range": {
+                        "start_date": start_date,
+                        "end_date": end_date
+                    },
+                    "steps": ["download"]
+                },
+                "forex": {
+                    "enabled": forex_enabled,
+                    "asset_type": "forex",
+                    "symbols": forex_symbols,
+                    "date_range": {
+                        "start_date": start_date,
+                        "end_date": end_date
+                    },
+                    "steps": ["download"]
+                },
+                "futures": {
+                    "enabled": futures_enabled,
+                    "asset_type": "futures",
+                    "symbols": futures_symbols,
+                    "date_range": {
+                        "start_date": start_date,
+                        "end_date": end_date
+                    },
+                    "steps": ["download"]
+                }
+            }
+        }
         
-        if args.pipelines:
-            pipelines_to_run = args.pipelines
+        # Determine which pipelines to run
+        if pipelines:
+            pipelines_to_run = pipelines
         else:
             pipelines_to_run = [name for name, conf in config['pipelines'].items() if conf.get('enabled', True)]
         
         if not pipelines_to_run:
             safe_print("No pipeline to run. Check configuration.", "ERROR")
+            return
         
         safe_print(f"Pipelines to execute: {pipelines_to_run}", "INFO")
         
@@ -1331,7 +1535,7 @@ def main():
             result_queue = queue.Queue()
             all_stats = []
             
-            with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=download_threads_max) as executor:
                 futures = [executor.submit(download_worker, config, pipeline_name, batch, result_queue) for batch in symbol_batches]
                 
                 # Collect results as they complete
@@ -1380,13 +1584,13 @@ def main():
         total_processed = sum(s['stats'].get('processed', 0) for s in all_stats)
 
         message_parts = [
-            f"{status_emoji} **KIBOT DOWNLOAD COMPLETED** {status_emoji}",
+            f"{status_emoji} *KIBOT DOWNLOAD COMPLETED* {status_emoji}",
             "",
-            f"**Status:** {status_text}",
-            f"**Duration:** {str(duration).split('.')[0]}",
-            f"**Pipelines:** {successful_pipelines}/{len(results)} successful",
+            f"*Status:* {status_text}",
+            f"*Duration:* {str(duration).split('.')[0]}",
+            f"*Pipelines:* {successful_pipelines}/{len(results)} successful",
             "",
-            "**Pipeline Results:**"
+            "*Pipeline Results:*"
         ]
 
         for pipeline, success in results.items():
@@ -1395,7 +1599,7 @@ def main():
 
         message_parts.extend([
             "",
-            "**Download Summary:**",
+            "*Download Summary:*",
             f"✅ Downloaded successfully: {total_downloaded}",
             f"⏭️ Already existed: {total_existing}",
             f"❓ No data on server: {total_no_data}",
@@ -1405,7 +1609,7 @@ def main():
 
         message_parts.extend([
             "",
-            f"**Timestamp:** {end_time.strftime('%Y-%m-%d %H:%M:%S')}"
+            f"*Timestamp:* {end_time.strftime('%Y-%m-%d %H:%M:%S')}"
         ])
 
         slack_message = "\n".join(message_parts)

@@ -352,8 +352,8 @@ def assign_permissions(cur):
                     
                     category_assets = cur.fetchall()
                     for (asset_id,) in category_assets:
-                        asset_ids_to_assign.add(asset_id)
-                    
+                asset_ids_to_assign.add(asset_id)
+            
                     print(f"Utente base {user_id}: {len(category_assets)} asset {category} assegnati")
 
         elif role_name in ['senator', 'admin']:
@@ -361,7 +361,7 @@ def assign_permissions(cur):
             cur.execute("SELECT asset_id FROM assets")
             all_assets = cur.fetchall()
             for (asset_id,) in all_assets:
-                asset_ids_to_assign.add(asset_id)
+                    asset_ids_to_assign.add(asset_id)
             
             print(f"Utente {role_name} {user_id}: TUTTI i {len(asset_ids_to_assign)} asset assegnati")
 
