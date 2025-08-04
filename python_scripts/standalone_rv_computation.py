@@ -736,9 +736,29 @@ def prepare_data_rv(file_path, config):
         # Read parquet file
         df = pd.read_parquet(file_path)
         
-        # Ensure column names are consistent
+        # Log column information for debugging
+        logger = logging.getLogger('rv_processor')
+        logger.debug(f"Parquet file columns: {list(df.columns)}")
+        logger.debug(f"Expected columns: {data_columns}")
+        
+        # Handle different column structures in parquet files
         if len(df.columns) == len(data_columns):
+            # Standard case - rename columns
             df.columns = data_columns
+        elif len(df.columns) == 5 and 'time' not in df.columns:
+            # Some parquet files might have different column names
+            # Try to map based on position
+            df.columns = data_columns
+        elif 'time' in df.columns:
+            # File has time column but different structure
+            # Keep original column names and just ensure we have required columns
+            required_cols = ['time', 'price']
+            if not all(col in df.columns for col in required_cols):
+                logger.warning(f"Missing required columns in parquet file. Available: {list(df.columns)}")
+                return None
+        else:
+            logger.warning(f"Unexpected column structure in parquet file: {list(df.columns)}")
+            return None
     else:
         # Read CSV (txt) file
         df = pd.read_csv(file_path, header=None, dtype=data_type)
@@ -757,7 +777,17 @@ def prepare_data_rv(file_path, config):
         df['time'] = df['time'].apply(add_milliseconds)
        
     # Convert time to datetime and set as index
-    df['time'] = pd.to_datetime(df['time'], format='%H:%M:%S.%f')
+    try:
+        df['time'] = pd.to_datetime(df['time'], format='%H:%M:%S.%f')
+    except ValueError:
+        # Try alternative formats
+        try:
+            df['time'] = pd.to_datetime(df['time'])
+        except Exception as e:
+            logger = logging.getLogger('rv_processor')
+            logger.warning(f"Failed to parse time column: {e}. Time sample: {df['time'].iloc[0] if len(df) > 0 else 'empty'}")
+            return None
+    
     df.set_index('time', inplace=True)
     
     # Process price data based on asset type
@@ -1614,3 +1644,54 @@ def main(
             
     except Exception as e:
         logger.error(f"CRITICAL ERROR: {e}")
+
+def test_parquet_file(s3_key: str, config: Dict[str, Any]) -> Dict[str, Any]:
+    """Test function to diagnose parquet file issues"""
+    logger = logging.getLogger('rv_processor')
+    
+    try:
+        # Initialize S3 processor
+        s3_processor = S3DataProcessor(config)
+        
+        # Read raw data
+        raw_data = s3_processor.read_s3_file(s3_key)
+        if raw_data is None:
+            return {"error": "Failed to read file from S3"}
+        
+        logger.info(f"Raw data shape: {raw_data.shape}")
+        logger.info(f"Raw data columns: {list(raw_data.columns)}")
+        logger.info(f"Raw data types: {raw_data.dtypes.to_dict()}")
+        
+        # Save to temp file
+        import tempfile
+        import os
+        
+        file_format = config.get('file_format', 'txt').lower()
+        file_extension = '.parquet' if file_format == 'parquet' else '.txt'
+        
+        with tempfile.NamedTemporaryFile(mode='w+b', suffix=file_extension, delete=False) as temp_file:
+            temp_file_path = temp_file.name
+            
+            if file_format == 'parquet':
+                raw_data.to_parquet(temp_file_path, index=False)
+            else:
+                raw_data.to_csv(temp_file_path, index=False, header=False)
+        
+        try:
+            # Try to prepare data
+            df = prepare_data_rv(temp_file_path, config)
+            
+            if df is not None:
+                logger.info(f"Successfully prepared data. Shape: {df.shape}")
+                logger.info(f"Time range: {df.index.min()} to {df.index.max()}")
+                return {"success": True, "shape": df.shape, "time_range": f"{df.index.min()} to {df.index.max()}"}
+            else:
+                return {"error": "prepare_data_rv returned None"}
+                
+        finally:
+            # Clean up temp file
+            os.unlink(temp_file_path)
+            
+    except Exception as e:
+        logger.error(f"Error testing file {s3_key}: {e}")
+        return {"error": str(e)}
