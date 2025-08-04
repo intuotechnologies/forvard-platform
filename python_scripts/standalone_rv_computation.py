@@ -111,7 +111,7 @@ def garman_klass_variance(data, asset_type):
     high_price = prices.max()
     low_price = prices.min()
 
-    if asset_type=='stocks' or asset_type=='ETFs':
+    if asset_type=='stocks' or asset_type=='ETFs' or asset_type=='etfs':
         filtered_df = data[data['volume'] >= 100]
         open_price = filtered_df['price'].iloc[0]   
         close_price = filtered_df['price'].iloc[-1] 
@@ -724,6 +724,7 @@ def prepare_data_rv(file_path, config):
         data_type = {0: 'str', 1: 'float', 2: 'float', 3: 'float', 4: 'int', 5: 'int'}
         data_columns = ['time', 'price', 'bid', 'ask', 'volume', 'trades']
     else:
+        # Stocks and ETFs use the same format
         data_type = {0: 'str', 1: 'float', 2: 'int', 3: 'int', 4: 'float'}
         data_columns = ['time', 'price', 'volume', 'trades', 'is_not_outlier']
 
@@ -764,7 +765,7 @@ def prepare_data_rv(file_path, config):
         # For forex/futures with bid-ask data
         df['price'] = (df['bid'] + df['ask']) / 2
     else:
-        # Adjust price based on outliers
+        # For stocks and ETFs - adjust price based on outliers
         # if 'is_not_outlier' = 0 : overnight, if 'is_not_outlier' = NaN : outliers, if 'is_not_outlier' = 1 : good price
         df = df[(df['is_not_outlier'] != 0) | df['is_not_outlier'].isna()]
         df['price'] = df['price'] * df['is_not_outlier']
@@ -862,7 +863,7 @@ class S3DataProcessor:
             raise
 
     def list_s3_files(self, asset_type: str, symbol: str) -> List[str]:
-        """List all files for a symbol in S3"""
+        """List all files for a symbol in S3, handling pagination."""
         try:
             bucket_name = self.config['s3_bucket']
             # Use consistent path structure: data/{asset_type}/{symbol}/
@@ -870,21 +871,20 @@ class S3DataProcessor:
             
             self.logger.info(f"Searching S3 path: {bucket_name}/{prefix}")
             
-            response = self.s3_client.list_objects_v2(
-                Bucket=bucket_name,
-                Prefix=prefix
-            )
-            
             files = []
-            if 'Contents' in response:
-                for obj in response['Contents']:
-                    key = obj['Key']
-                    filename = key.split('/')[-1]
-                    
-                    # Filter out unwanted files
-                    if filename.endswith('.txt') or filename.endswith('.parquet'):
-                        if not filename.endswith('_last_update.txt') and filename != 'adjustment.txt':
-                            files.append(key)
+            paginator = self.s3_client.get_paginator('list_objects_v2')
+            pages = paginator.paginate(Bucket=bucket_name, Prefix=prefix)
+
+            for page in pages:
+                if 'Contents' in page:
+                    for obj in page['Contents']:
+                        key = obj['Key']
+                        filename = key.split('/')[-1]
+                        
+                        # Filter out unwanted files
+                        if filename.endswith(('.txt', '.parquet')):
+                            if not filename.endswith('_last_update.txt') and filename != 'adjustment.txt':
+                                files.append(key)
             
             self.logger.info(f"Found {len(files)} files for {symbol}")
             return sorted(files)
@@ -1096,6 +1096,7 @@ def process_single_file_with_retry(s3_processor: S3DataProcessor, s3_key: str,
                 num_trades = df['trades'].sum() if 'trades' in df.columns else 0
                 volume = 0
             else:
+                # Stocks and ETFs have volume and trades
                 num_trades = df['trades'].sum() if 'trades' in df.columns else 0
                 volume = df['volume'].sum() if 'volume' in df.columns else 0
 
@@ -1110,7 +1111,8 @@ def process_single_file_with_retry(s3_processor: S3DataProcessor, s3_key: str,
                               resampling_method='last', calculate_subsample=True, n_subsamples=5)
                 volatility_results['rv5'] = rv5_result[0] if isinstance(rv5_result, tuple) else rv5_result
                 volatility_results['rv5_ss'] = rv5_result[1] if isinstance(rv5_result, tuple) else None
-            except Exception:
+            except Exception as e:
+                logger.warning(f"Symbol {symbol} on {file_date.strftime('%Y-%m-%d')}: realized_power_variation (RV) failed. Error: {e}")
                 volatility_results.update({'rv1': None, 'rv5': None, 'rv5_ss': None})
                 
             # Quarticity
@@ -1124,7 +1126,8 @@ def process_single_file_with_retry(s3_processor: S3DataProcessor, s3_key: str,
                 volatility_results['rq5'] = rq5_result[0] if isinstance(rq5_result, tuple) else rq5_result
                 volatility_results['rq5_ss'] = rq5_result[1] if isinstance(rq5_result, tuple) else None
                
-            except Exception:
+            except Exception as e:
+                logger.warning(f"Symbol {symbol} on {file_date.strftime('%Y-%m-%d')}: realized_power_variation (RQ) failed. Error: {e}")
                 volatility_results.update({'rq1': None, 'rq5': None, 'rq5_ss': None})
             
             try:
@@ -1135,7 +1138,8 @@ def process_single_file_with_retry(s3_processor: S3DataProcessor, s3_key: str,
                               resampling_method='last', calculate_subsample=True, n_subsamples=5)
                 volatility_results['bv5'] = bv5_result[0] if isinstance(bv5_result, tuple) else bv5_result
                 volatility_results['bv5_ss'] = bv5_result[1] if isinstance(bv5_result, tuple) else None
-            except Exception:
+            except Exception as e:
+                logger.warning(f"Symbol {symbol} on {file_date.strftime('%Y-%m-%d')}: bipower_variation failed. Error: {e}")
                 volatility_results.update({'bv1': None, 'bv5': None, 'bv5_ss': None})
             
             try:
@@ -1153,7 +1157,8 @@ def process_single_file_with_retry(s3_processor: S3DataProcessor, s3_key: str,
                     volatility_results['rsn5_ss'] = rs_result_5[3]
                 else:
                     volatility_results.update({'rsp5': None, 'rsn5': None, 'rsp5_ss': None, 'rsn5_ss': None})
-            except Exception:
+            except Exception as e:
+                logger.warning(f"Symbol {symbol} on {file_date.strftime('%Y-%m-%d')}: realized_semivariance failed. Error: {e}")
                 volatility_results.update({'rsp1': None, 'rsn1': None, 'rsp5': None, 'rsn5': None, 
                                          'rsp5_ss': None, 'rsn5_ss': None})
             
@@ -1165,7 +1170,8 @@ def process_single_file_with_retry(s3_processor: S3DataProcessor, s3_key: str,
                                     resampling_method='last', calculate_subsample=True, n_subsamples=5)
                 volatility_results['medrv5'] = medrv5_result[0] if isinstance(medrv5_result, tuple) else medrv5_result
                 volatility_results['medrv5_ss'] = medrv5_result[1] if isinstance(medrv5_result, tuple) else None
-            except Exception:
+            except Exception as e:
+                logger.warning(f"Symbol {symbol} on {file_date.strftime('%Y-%m-%d')}: median_realized_variance failed. Error: {e}")
                 volatility_results.update({'medrv1': None, 'medrv5': None, 'medrv5_ss': None})
             
             try:
@@ -1176,23 +1182,27 @@ def process_single_file_with_retry(s3_processor: S3DataProcessor, s3_key: str,
                                     resampling_method='last', calculate_subsample=True, n_subsamples=5)
                 volatility_results['minrv5'] = minrv5_result[0] if isinstance(minrv5_result, tuple) else minrv5_result
                 volatility_results['minrv5_ss'] = minrv5_result[1] if isinstance(minrv5_result, tuple) else None
-            except Exception:
+            except Exception as e:
+                logger.warning(f"Symbol {symbol} on {file_date.strftime('%Y-%m-%d')}: min_realized_variance failed. Error: {e}")
                 volatility_results.update({'minrv1': None, 'minrv5': None, 'minrv5_ss': None})
 
             try:
                 volatility_results['rk'] = realized_kernel_variance(df, resample_freq='1s', price_col='price', resampling_method='last')
-            except Exception:
+            except Exception as e:
+                logger.warning(f"Symbol {symbol} on {file_date.strftime('%Y-%m-%d')}: realized_kernel_variance failed. Error: {e}")
                 volatility_results['rk'] = None
             
             try:
                 high_price, low_price, pv = parkinson_variance(df)
                 rr5 = realized_range(df)
-            except Exception:
+            except Exception as e:
+                logger.warning(f"Symbol {symbol} on {file_date.strftime('%Y-%m-%d')}: parkinson_variance/realized_range failed. Error: {e}")
                 high_price = low_price = pv = rr5 = None
             
             try:
                 open_price, close_price, gk = garman_klass_variance(df, config['asset_type'])
-            except Exception:
+            except Exception as e:
+                logger.warning(f"Symbol {symbol} on {file_date.strftime('%Y-%m-%d')}: garman_klass_variance failed. Error: {e}")
                 open_price = close_price = gk = None
            
             result = {
@@ -1417,9 +1427,9 @@ def main(
     forex_symbols=[  "EURUSD", "GBPUSD", "AUDUSD", "CADUSD", "JPYUSD", "CHFUSD", "SGDUSD", "HKDUSD", "KRWUSD", "INRUSD", "RUBUSD", "BRLUSD"],
     futures_enabled=True,
     futures_symbols=[  "ES", "CL", "GC", "NG", "NQ", "TY", "FV", "EU", "SI", "C", "W", "VX"],
+    etfs_enabled=True,
+    etfs_symbols=["SPY", "QQQ", "IWM", "VTI", "VEA", "VWO", "AGG", "BND", "GLD", "SLV", "USO", "TLT"],
     
-    # MANCANO GLI ETF
-
     # Processing settings
     max_workers=4,
     file_format="parquet",
@@ -1439,6 +1449,8 @@ def main(
         forex_symbols: List of forex symbols
         futures_enabled: Enable futures pipeline
         futures_symbols: List of futures symbols
+        etfs_enabled: Enable ETFs pipeline
+        etfs_symbols: List of ETF symbols
         
         max_workers: Maximum number of parallel workers
         file_format: File format ('parquet' or 'txt')
@@ -1463,6 +1475,8 @@ def main(
             enabled_types.append(f"forex({len(forex_symbols)} symbols)")
         if futures_enabled:
             enabled_types.append(f"futures({len(futures_symbols)} symbols)")
+        if etfs_enabled:
+            enabled_types.append(f"etfs({len(etfs_symbols)} symbols)")
         
         if enabled_types:
             logger.info(f"Enabled asset types: {', '.join(enabled_types)}")
@@ -1528,6 +1542,23 @@ def main(
             total_errors += sum(r["errors"] for r in futures_results)
             total_files += sum(r.get("total_files", 0) for r in futures_results)
             total_skipped += sum(r.get("skipped", 0) for r in futures_results)
+        
+        # Process etfs if enabled
+        if etfs_enabled:
+            logger.info("Processing ETFs asset type...")
+            etfs_config = {
+                'asset_type': "etfs",
+                'symbols': etfs_symbols,
+                'file_format': file_format,
+                'max_workers': max_workers,
+                's3_bucket': s3_bucket
+            }
+            etfs_results = process_all_symbols_threaded(etfs_config)
+            all_results.extend(etfs_results)
+            total_processed += sum(r["processed"] for r in etfs_results)
+            total_errors += sum(r["errors"] for r in etfs_results)
+            total_files += sum(r.get("total_files", 0) for r in etfs_results)
+            total_skipped += sum(r.get("skipped", 0) for r in etfs_results)
         
         # Final summary
         end_time = datetime.now()
