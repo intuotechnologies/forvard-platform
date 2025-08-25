@@ -1,0 +1,35 @@
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 100px; /* 1 pollice (96px) di spazio interno sinistro e destro */
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+}
+
+.footer-logo {
+  width: 400px;
+  padding: 10px 100px; /* dimensione più appropriata per il logo */
+}
+
+.footer a {
+  color: #fef24b;
+  text-decoration: none;
+  margin: 0 8px;
+}
+
+.footer-section {
+  flex: 1;
+}
+
+.footer-center {
+  display: flex;
+  justify-content: center;
+  
+}
+
+.footer-right {
+  display: flex;
+  justify-content: flex-end;
+  padding: 10px 100px;
+}

@@ -1,0 +1,180 @@
+/* About Page Styles */
+.about-page {
+  min-height: 100vh;
+  background-color: rgb(245, 244, 236);
+  padding: 120px 0 40px;
+  font-family: 'Manrope', sans-serif;
+}
+
+.about-container {
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.about-content {
+  background: white;
+  border-radius: 12px;
+  padding: 40px;
+  box-shadow: 0 4px 16px rgba(0, 78, 90, 0.1);
+  min-height: 600px;
+}
+
+.about-content h1 {
+  color: rgb(0, 78, 90);
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+.about-content h2 {
+  color: rgb(0, 78, 90);
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 24px;
+  border-bottom: 3px solid rgb(226, 255, 89);
+  padding-bottom: 12px;
+  margin-top: 32px;
+}
+
+.about-content h2:first-of-type {
+  margin-top: 0;
+}
+
+.about-content h3 {
+  color: rgb(0, 78, 90);
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin: 32px 0 16px;
+}
+
+.about-content h4 {
+  color: rgb(0, 78, 90);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 24px 0 12px;
+}
+
+.about-content p {
+  color: #444;
+  line-height: 1.7;
+  margin-bottom: 16px;
+  font-size: 1rem;
+}
+
+.about-content strong {
+  color: rgb(0, 78, 90);
+  font-weight: 600;
+}
+
+.about-content ul, .about-content ol {
+  color: #444;
+  line-height: 1.7;
+  margin-bottom: 16px;
+  padding-left: 24px;
+}
+
+.about-content li {
+  margin-bottom: 8px;
+}
+
+.about-content li strong {
+  color: rgb(0, 78, 90);
+  font-weight: 600;
+}
+
+.about-content a {
+  color: rgb(0, 78, 90);
+  text-decoration: none;
+  font-weight: 500;
+  border-bottom: 1px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.about-content a:hover {
+  border-bottom-color: rgb(226, 255, 89);
+  color: rgb(0, 78, 90);
+}
+
+/* Special styling for the intro section - matching abstract-section */
+.intro-section {
+  background: rgb(0, 78, 90);
+  color: white;
+  padding: 30px;
+  border-radius: 12px;
+  margin: 25px 0;
+  box-shadow: 0 4px 16px rgba(0, 78, 90, 0.2);
+}
+
+.intro-section h1 {
+  color: rgb(226, 255, 89);
+  margin-bottom: 15px;
+  font-size: 3rem;
+  border: none;
+  padding: 0;
+  text-align: center;
+}
+
+.intro-section p {
+  color: rgba(255, 255, 255, 0.95);
+  line-height: 1.8;
+  font-size: 1.05rem;
+  margin-bottom: 16px;
+}
+
+.intro-section strong {
+  color: rgb(226, 255, 89);
+  font-weight: 600;
+}
+
+/* Responsive Design */
+@media (max-width: 968px) {
+  .about-page {
+    padding: 100px 0 20px;
+  }
+  
+  .about-content {
+    padding: 24px;
+  }
+  
+  .about-content h1,
+  .intro-section h1 {
+    font-size: 2.5rem;
+  }
+  
+  .about-content h2 {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .about-page {
+    padding: 80px 0 20px;
+  }
+  
+  .about-content h1,
+  .intro-section h1 {
+    font-size: 2rem;
+  }
+  
+  .about-content h2 {
+    font-size: 1.75rem;
+  }
+  
+  .about-content h3 {
+    font-size: 1.5rem;
+  }
+  
+  .about-content {
+    padding: 20px;
+  }
+  
+  .intro-section {
+    padding: 20px;
+  }
+  
+  .intro-section p {
+    font-size: 1rem;
+  }
+}
