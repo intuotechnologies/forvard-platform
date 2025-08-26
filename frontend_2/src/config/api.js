@@ -1,6 +1,5 @@
 // src/config/api.js - VERSIONE FINALE CORRETTA
 export const API_CONFIG = {
-  // BASE_URL: Usa HTTP per evitare errori SSL
   BASE_URL: 'http://volare.unime.it:8443',
   
   ENDPOINTS: {
