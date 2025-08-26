@@ -141,8 +141,9 @@ CREATE TABLE IF NOT EXISTS public.realized_covariance_data
     rscov_n numeric,
     rscov_mp numeric,
     rscov_mn numeric,
+    asset_type character varying(50) COLLATE pg_catalog."default" NOT NULL,
     CONSTRAINT realized_covariance_data_pkey PRIMARY KEY (id),
-    CONSTRAINT realized_covariance_data_date_asset1_ass_key UNIQUE (date, asset1, asset2)
+    CONSTRAINT realized_covariance_data_date_asset1_ass_key UNIQUE (date, asset1, asset2, asset_type)
 );
 
 COMMENT ON TABLE public.realized_covariance_data
@@ -191,6 +192,8 @@ ALTER TABLE IF EXISTS public.asset_permissions
 CREATE INDEX IF NOT EXISTS idx_rv_data_date_symbol ON public.realized_volatility_data (observation_date, symbol);
 CREATE INDEX IF NOT EXISTS idx_rv_data_symbol ON public.realized_volatility_data (symbol);
 CREATE INDEX IF NOT EXISTS idx_rv_data_asset_type ON public.realized_volatility_data (asset_type);
+CREATE INDEX IF NOT EXISTS idx_rcov_data_date_assets ON public.realized_covariance_data (date, asset1, asset2);
+CREATE INDEX IF NOT EXISTS idx_rcov_data_asset_type ON public.realized_covariance_data (asset_type);
 CREATE INDEX IF NOT EXISTS idx_users_email ON public.users (email);
 CREATE INDEX IF NOT EXISTS idx_users_role_id ON public.users (role_id);
 

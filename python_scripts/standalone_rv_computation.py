@@ -100,7 +100,7 @@ def parkinson_variance(data):
     ln_hl_ratio = np.log(high_price / low_price)
     pv = ((1 / (4 * np.log(2))) * ln_hl_ratio**2)
     
-    return high_price, low_price, pv
+    return pv
 
 def garman_klass_variance(data, asset_type):
     """Calculate Garman-Klass Range-based Volatility Estimator for High-Frequency Data"""
@@ -125,7 +125,7 @@ def garman_klass_variance(data, asset_type):
     
     gkv = (1/2) * (ln_hl_ratio**2) - (2 * np.log(2) - 1) * (ln_co_ratio**2)
       
-    return open_price, close_price, gkv 
+    return gkv
 
 def realized_range(data):
     """Calculate the realized range proposed by Martens and Van Dijk (2007) and Christensen and Podolskij (2007)"""
@@ -420,16 +420,20 @@ def median_realized_variance(data, resample_freq='5min', price_col='price',
         n = len(abs_returns)
         
         # If we don't have enough returns, return NaN
-        if n < 3:
+        if n < 2:
             return np.nan
         
         # Calculate MedRV
-        rr = np.array([abs_returns[0:n-2], abs_returns[1:n-1], abs_returns[2:n]]).T
+        rr = np.array([abs_returns[0:n-1], abs_returns[1:n]]).T
         medRV = np.sum(np.median(rr, axis=1)**2)
         
-        # Apply scaling factor
+        # Apply scaling factor with safety check
         medRVScale = np.pi/(6-4*np.sqrt(3)+np.pi)
-        medRV = medRV * medRVScale * (M/(M-2))
+        if M is not None and M > 2:
+            medRV = medRV * medRVScale * (M/(M-2))
+        else:
+            # Fallback when M is not available or M <= 2
+            medRV = medRV * medRVScale
         
         return medRV
         
@@ -483,9 +487,13 @@ def min_realized_variance(data, resample_freq='5min', price_col='price',
         rr = np.array([abs_returns[0:n-1], abs_returns[1:n]]).T
         minRV = np.sum(np.min(rr, axis=1)**2)
         
-        # Apply scaling factor
+        # Apply scaling factor with safety check
         minRVscale = np.pi/(np.pi-2)
-        minRV = minRV * minRVscale * (M/(M-2))
+        if M is not None and M > 2:
+            minRV = minRV * minRVscale * (M/(M-2))
+        else:
+            # Fallback when M is not available or M <= 2
+            minRV = minRV * minRVscale
         
         return minRV
     
@@ -617,15 +625,26 @@ def estimate_bandwidth(df, m, price_col ='price'):
 
     c_star = ((12)**2/0.269)**(1/5)  # Constant for Parzen kernel 3.5134
         
-    # Compute xi squared noiseVariance/IV
-    xi_squared = (noise_variance) / (rv_sparse)
+    # Compute xi squared noiseVariance/IV with safety checks
+    if rv_sparse is None or np.isnan(rv_sparse) or rv_sparse == 0:
+        # Fallback to a reasonable default
+        xi_squared = 0.1
+    else:
+        xi_squared = (noise_variance) / (rv_sparse)
 
-    if xi_squared>1:
+    if xi_squared > 1:
        xi_squared = 1
+    elif xi_squared <= 0 or np.isnan(xi_squared):
+        # Fallback to a reasonable default
+        xi_squared = 0.1
   
     # Bandwidth calculation
     # m number of resampled observation used for the kernel estimation
     H = c_star * (xi_squared)**(2/5) * m**(3/5)
+    
+    # Ensure H is a valid number
+    if np.isnan(H) or H <= 0:
+        H = 1.0  # Fallback to minimum bandwidth
     
     return H
 
@@ -662,6 +681,10 @@ def realized_kernel_variance(df, resample_freq='1s', price_col='price', resampli
     
     # Estimate bandwidth
     H = estimate_bandwidth(df, n+1, price_col)  
+    
+    # Ensure H is valid
+    if H is None or np.isnan(H) or H <= 0:
+        H = 1.0
        
     # Calculate the realized kernel
     realized_var = 0
@@ -673,6 +696,11 @@ def realized_kernel_variance(df, resample_freq='1s', price_col='price', resampli
     else:
         # For integer H, use the standard range
         H = int(H)
+        H_int = H
+    
+    # Ensure H_int is at least 1
+    if H_int < 1:
+        H_int = 1
  
     def autocovariance(h):
         """Calculate the autocovariance for a given lag h"""
@@ -694,6 +722,10 @@ def replace_nan(df):
     """Replace NaN values in the price column with local averages."""
     # Create a copy to avoid modifying the original
     df_copy = df.copy()
+    
+    # Check if price column exists
+    if 'price' not in df_copy.columns:
+        return df_copy
     
     # Find indices with NaN values
     nan_indices = df_copy.index[df_copy['price'].isna()]
@@ -749,6 +781,12 @@ def prepare_data_rv(file_path, config):
             # Some parquet files might have different column names
             # Try to map based on position
             df.columns = data_columns
+        elif len(df.columns) == 4 and 'time' in df.columns:
+            # Handle 4-column case (missing is_not_outlier for stocks/ETFs)
+            if config['asset_type'] in ['forex', 'futures']:
+                df.columns = ['time', 'price', 'bid', 'ask']
+            else:
+                df.columns = ['time', 'price', 'volume', 'trades']
         elif 'time' in df.columns:
             # File has time column but different structure
             # Keep original column names and just ensure we have required columns
@@ -790,6 +828,13 @@ def prepare_data_rv(file_path, config):
     
     df.set_index('time', inplace=True)
     
+    # Ensure we have the required columns for processing
+    required_cols = ['price']
+    if not all(col in df.columns for col in required_cols):
+        logger = logging.getLogger('rv_processor')
+        logger.warning(f"Missing required columns after processing. Available: {list(df.columns)}")
+        return None
+    
     # Process price data based on asset type
     if config['asset_type'] in ['forex', 'futures'] and 'bid' in df.columns and 'ask' in df.columns:
         # For forex/futures with bid-ask data
@@ -797,8 +842,17 @@ def prepare_data_rv(file_path, config):
     else:
         # For stocks and ETFs - adjust price based on outliers
         # if 'is_not_outlier' = 0 : overnight, if 'is_not_outlier' = NaN : outliers, if 'is_not_outlier' = 1 : good price
-        df = df[(df['is_not_outlier'] != 0) | df['is_not_outlier'].isna()]
-        df['price'] = df['price'] * df['is_not_outlier']
+        if 'is_not_outlier' in df.columns:
+            # Filter out overnight data (is_not_outlier = 0)
+            df = df[(df['is_not_outlier'] != 0) | df['is_not_outlier'].isna()]
+            
+            # Apply outlier adjustment only where is_not_outlier is not NaN
+            mask = df['is_not_outlier'].notna()
+            df.loc[mask, 'price'] = df.loc[mask, 'price'] * df.loc[mask, 'is_not_outlier']
+        else:
+            # If is_not_outlier column doesn't exist, just use the price as is
+            pass
+        
         # Replace NaN values with local averages
         df = replace_nan(df)
     
@@ -941,6 +995,61 @@ class S3DataProcessor:
                     import pyarrow.parquet as pq
                     import io
                     df = pq.read_table(io.BytesIO(file_content)).to_pandas()
+                    
+                    # Check for unexpected column structure and handle it
+                    if list(df.columns) == ['1', '2', '3', 'trades']:
+                        # This appears to be a parquet file with numeric column names
+                        # Map them to expected column names based on asset type
+                        asset_type = self.config.get('asset_type', 'stocks')
+                        if asset_type in ['forex', 'futures']:
+                            # Forex/futures format: time, price, bid, ask, volume, trades
+                            # But we only have 4 columns, so map to: time, price, bid, ask
+                            df.columns = ['time', 'price', 'bid', 'ask']
+                        else:
+                            # Stocks/ETFs format: time, price, volume, trades, is_not_outlier
+                            # But we only have 4 columns, so map to: time, price, volume, trades
+                            df.columns = ['time', 'price', 'volume', 'trades']
+                        
+                        self.logger.debug(f"Mapped parquet columns for {s3_key}: {list(df.columns)}")
+                    elif len(df.columns) == 4 and all(str(col).isdigit() for col in df.columns):
+                        # Handle case with 4 numeric columns
+                        asset_type = self.config.get('asset_type', 'stocks')
+                        if asset_type in ['forex', 'futures']:
+                            df.columns = ['time', 'price', 'bid', 'ask']
+                        else:
+                            df.columns = ['time', 'price', 'volume', 'trades']
+                        
+                        self.logger.debug(f"Mapped 4-column parquet for {s3_key}: {list(df.columns)}")
+                    elif len(df.columns) == 5 and all(str(col).isdigit() for col in df.columns):
+                        # Handle case with 5 numeric columns
+                        asset_type = self.config.get('asset_type', 'stocks')
+                        if asset_type in ['forex', 'futures']:
+                            df.columns = ['time', 'price', 'bid', 'ask', 'volume']
+                        else:
+                            df.columns = ['time', 'price', 'volume', 'trades', 'is_not_outlier']
+                        
+                        self.logger.debug(f"Mapped 5-column parquet for {s3_key}: {list(df.columns)}")
+                    elif list(df.columns) == ['time', 'price', 'volume', 'trades', 'is_not_outlier']:
+                        # This is the expected structure for stocks/ETFs - no mapping needed
+                        self.logger.debug(f"Expected stocks/ETFs column structure for {s3_key}: {list(df.columns)}")
+                    elif list(df.columns) == ['time', 'price', 'bid', 'ask', 'volume', 'trades']:
+                        # This is the expected structure for forex/futures - no mapping needed
+                        self.logger.debug(f"Expected forex/futures column structure for {s3_key}: {list(df.columns)}")
+                    elif list(df.columns) == ['time', 'price', 'volume', 'trades']:
+                        # This is a valid 4-column structure for stocks/ETFs - no mapping needed
+                        self.logger.debug(f"Valid 4-column stocks/ETFs structure for {s3_key}: {list(df.columns)}")
+                    elif list(df.columns) == ['time', 'price', 'bid', 'ask']:
+                        # This is a valid 4-column structure for forex/futures - no mapping needed
+                        self.logger.debug(f"Valid 4-column forex/futures structure for {s3_key}: {list(df.columns)}")
+                    else:
+                        # Log unexpected structure but continue
+                        self.logger.warning(f"Unexpected column structure in parquet file: {list(df.columns)}")
+                        # Try to continue with the original column names if they contain 'time' and 'price'
+                        if 'time' in df.columns and 'price' in df.columns:
+                            self.logger.info(f"Continuing with original column names: {list(df.columns)}")
+                        else:
+                            self.logger.error(f"Cannot process file {s3_key} - missing required columns")
+                            return None
                 except ImportError:
                     self.logger.warning(f"PyArrow not available, attempting CSV read for {s3_key}")
                     # Fallback to CSV reading
@@ -1223,17 +1332,17 @@ def process_single_file_with_retry(s3_processor: S3DataProcessor, s3_key: str,
                 volatility_results['rk'] = None
             
             try:
-                high_price, low_price, pv = parkinson_variance(df)
+                pv = parkinson_variance(df)
                 rr5 = realized_range(df)
             except Exception as e:
                 logger.warning(f"Symbol {symbol} on {file_date.strftime('%Y-%m-%d')}: parkinson_variance/realized_range failed. Error: {e}")
-                high_price = low_price = pv = rr5 = None
+                pv = rr5 = None
             
             try:
-                open_price, close_price, gk = garman_klass_variance(df, config['asset_type'])
+                gk = garman_klass_variance(df, config['asset_type'])
             except Exception as e:
                 logger.warning(f"Symbol {symbol} on {file_date.strftime('%Y-%m-%d')}: garman_klass_variance failed. Error: {e}")
-                open_price = close_price = gk = None
+                gk = None
            
             result = {
                 'date': file_date.strftime('%Y-%m-%d'),
@@ -1241,10 +1350,10 @@ def process_single_file_with_retry(s3_processor: S3DataProcessor, s3_key: str,
                 'asset_type': config['asset_type'],
                 'volume': volume,
                 'trades': num_trades,
-                'open': open_price,
-                'close': close_price,
-                'high': high_price,
-                'low': low_price,
+                'open': None,  # These are no longer available from the functions
+                'close': None,  # These are no longer available from the functions
+                'high': None,   # These are no longer available from the functions
+                'low': None,    # These are no longer available from the functions
                 'pv': pv,
                 'gk': gk,
                 'rr5': rr5,
@@ -1458,9 +1567,7 @@ def main(
     futures_enabled=True,
     futures_symbols=[  "ES", "CL", "GC", "NG", "NQ", "TY", "FV", "EU", "SI", "C", "W", "VX"],
     etfs_enabled=True,
-    etfs_symbols=["SPY", "QQQ", "IWM", "VTI", "VEA", "VWO", "AGG", "BND", "GLD", "SLV", "USO", "TLT"],
-    
-    # Processing settings
+    etfs_symbols=["AGG", "BND", "GLD", "SLV", "SUSA", "EFIV", "ESGV", "ESGU", "AFTY", "MCHI", "EWH","EEM", "IEUR", "VGK", "FLCH", "EWJ", "NKY", "EWZ", "EWC", "EWU", "EWI", "EWP","ACWI", "IOO", "GWL", "VEU", "IJH", "MDY", "IVOO", "IYT", "XTN", "XLI", "XLU", "VPU", "SPSM", "IJR", "VIOO", "QQQ", "ICLN", "ARKK", "SPLG", "SPY", "VOO", "IYY", "VTI", "DIA"],
     max_workers=4,
     file_format="parquet",
     s3_bucket=None
