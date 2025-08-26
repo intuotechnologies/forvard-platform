@@ -1,6 +1,6 @@
 // src/config/api.js - VERSIONE FINALE CORRETTA
 export const API_CONFIG = {
-  BASE_URL: 'http://volare.unime.it:8443',
+  BASE_URL: '/api', // Proxy tramite Nginx
   
   ENDPOINTS: {
     // Authentication

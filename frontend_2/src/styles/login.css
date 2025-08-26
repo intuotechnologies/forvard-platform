@@ -10,7 +10,7 @@ body, html {
 .login-page {
   height: 100vh;
   width: 100vw;
-  background-image: url("/Users/giulia/Desktop/Forvard/VOLARE/public/sfondo.png"); /* metti il tuo sfondo personalizzato */
+  background-image: url("./sfondo.png"); /* sfondo personalizzato */
   background-size: cover;
   display: flex;
   align-items: center;
