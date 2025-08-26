@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/logo.css';
-import logoImage from '/Users/giulia/Desktop/Forvard/VOLARE/public/logo.png'; // Assicurati che il percorso sia corretto
+import logoImage from '/public/logo.png';
 
 const Logo = () => {
   return (
