@@ -9679,3 +9679,911 @@ LINE 3:             FROM asset_access_limits
 2025-08-01 08:27:48.440 | INFO | app.main:add_process_time_header:78 - Response sent: 200
 2025-08-01 15:37:44.257 | INFO | app.main:add_process_time_header:63 - Request received: POST /athletes/2736/generate-card
 2025-08-01 15:37:44.271 | INFO | app.main:add_process_time_header:78 - Response sent: 404
+2025-09-03 00:30:15.677 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-09-03 00:30:15.678 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-09-03 00:34:33.335 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-09-03 00:34:33.350 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-09-03 00:35:25.064 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-09-03 00:35:25.066 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-09-03 00:35:56.286 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-09-03 00:35:56.288 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-09-03 00:35:57.070 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-09-03 00:35:57.072 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-09-03 00:35:57.802 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-09-03 00:35:57.803 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-09-03 00:36:02.541 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-09-03 00:36:02.543 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-09-03 00:36:12.974 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-09-03 00:36:12.977 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-09-03 00:36:13.756 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-09-03 00:36:13.757 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-09-03 00:36:14.578 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-09-03 00:36:14.579 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-09-03 00:36:15.413 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-09-03 00:36:15.414 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-09-03 00:36:16.232 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-09-03 00:36:16.234 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-09-03 00:36:16.949 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-09-03 00:36:16.953 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-09-03 00:36:17.699 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-09-03 00:36:17.701 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-09-03 00:36:25.558 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-09-03 00:36:25.561 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-09-03 00:36:33.931 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-09-03 00:36:33.932 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-09-03 00:36:39.380 | INFO | app.main:add_process_time_header:63 - Request received: GET /docs
+2025-09-03 00:36:39.381 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:36:39.384 | INFO | app.main:add_process_time_header:63 - Request received: POST /auth/token
+2025-09-03 00:36:40.431 | WARNING | app.routers.auth:login_for_access_token:98 - Failed login attempt for: base@example.com
+2025-09-03 00:36:40.478 | INFO | app.main:add_process_time_header:78 - Response sent: 401
+2025-09-03 00:38:15.883 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-09-03 00:38:15.885 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-09-03 00:38:38.932 | INFO | app.main:add_process_time_header:63 - Request received: GET /
+2025-09-03 00:38:38.933 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:38:39.068 | INFO | app.main:add_process_time_header:63 - Request received: GET /favicon.ico
+2025-09-03 00:38:39.069 | INFO | app.main:add_process_time_header:78 - Response sent: 404
+2025-09-03 00:39:35.965 | INFO | app.main:add_process_time_header:63 - Request received: POST /auth/token
+2025-09-03 00:39:37.078 | INFO | app.routers.auth:login_for_access_token:108 - User logged in: base@example.com
+2025-09-03 00:39:37.193 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:39:37.198 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 00:39:37.393 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 00:39:37.489 | INFO | app.routers.financial_data:get_financial_data:218 - Financial data request by base@example.com
+2025-09-03 00:39:38.235 | INFO | app.routers.financial_data:get_financial_data:378 - Returned 200 financial data points to base@example.com
+2025-09-03 00:39:38.290 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:39:38.300 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 00:39:38.570 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 00:39:38.668 | INFO | app.routers.financial_data:get_financial_data:218 - Financial data request by base@example.com
+2025-09-03 00:39:38.954 | INFO | app.routers.financial_data:get_financial_data:378 - Returned 200 financial data points to base@example.com
+2025-09-03 00:39:39.007 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:39:39.018 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 00:39:39.288 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 00:39:39.387 | INFO | app.routers.financial_data:get_financial_data:218 - Financial data request by base@example.com
+2025-09-03 00:39:39.530 | INFO | app.routers.financial_data:get_financial_data:378 - Returned 200 financial data points to base@example.com
+2025-09-03 00:39:39.654 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:39:39.666 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 00:39:39.853 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 00:39:40.063 | INFO | app.routers.financial_data:get_financial_data:218 - Financial data request by base@example.com
+2025-09-03 00:39:40.567 | INFO | app.routers.financial_data:get_financial_data:378 - Returned 200 financial data points to base@example.com
+2025-09-03 00:39:40.617 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:39:40.622 | INFO | app.main:add_process_time_header:63 - Request received: POST /auth/token
+2025-09-03 00:39:40.955 | INFO | app.routers.auth:login_for_access_token:108 - User logged in: admin@example.com
+2025-09-03 00:39:41.001 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:39:41.003 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 00:39:41.289 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 3}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 00:39:41.388 | INFO | app.routers.financial_data:get_financial_data:218 - Financial data request by admin@example.com
+2025-09-03 00:39:41.585 | INFO | app.routers.financial_data:get_financial_data:378 - Returned 200 financial data points to admin@example.com
+2025-09-03 00:39:42.056 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:39:42.061 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 00:39:42.252 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 3}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 00:39:42.356 | INFO | app.routers.financial_data:get_financial_data:218 - Financial data request by admin@example.com
+2025-09-03 00:39:42.531 | INFO | app.routers.financial_data:get_financial_data:378 - Returned 200 financial data points to admin@example.com
+2025-09-03 00:39:42.584 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:39:42.591 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 00:39:42.780 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 3}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 00:39:42.879 | INFO | app.routers.financial_data:get_financial_data:218 - Financial data request by admin@example.com
+2025-09-03 00:39:43.001 | INFO | app.routers.financial_data:get_financial_data:378 - Returned 200 financial data points to admin@example.com
+2025-09-03 00:39:43.052 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:39:43.058 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 00:39:43.244 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 3}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 00:39:43.347 | INFO | app.routers.financial_data:get_financial_data:218 - Financial data request by admin@example.com
+2025-09-03 00:39:43.888 | INFO | app.routers.financial_data:get_financial_data:378 - Returned 200 financial data points to admin@example.com
+2025-09-03 00:39:43.943 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:39:43.952 | INFO | app.main:add_process_time_header:63 - Request received: POST /auth/token
+2025-09-03 00:39:44.312 | INFO | app.routers.auth:login_for_access_token:108 - User logged in: senator@example.com
+2025-09-03 00:39:44.359 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:39:44.362 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 00:39:44.554 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 2}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 00:39:44.659 | INFO | app.routers.financial_data:get_financial_data:218 - Financial data request by senator@example.com
+2025-09-03 00:39:44.944 | INFO | app.routers.financial_data:get_financial_data:378 - Returned 200 financial data points to senator@example.com
+2025-09-03 00:39:44.994 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:39:44.999 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 00:39:45.184 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 2}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 00:39:45.279 | INFO | app.routers.financial_data:get_financial_data:218 - Financial data request by senator@example.com
+2025-09-03 00:39:45.459 | INFO | app.routers.financial_data:get_financial_data:378 - Returned 200 financial data points to senator@example.com
+2025-09-03 00:39:45.508 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:39:45.514 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 00:39:45.699 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 2}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 00:39:45.800 | INFO | app.routers.financial_data:get_financial_data:218 - Financial data request by senator@example.com
+2025-09-03 00:39:45.985 | INFO | app.routers.financial_data:get_financial_data:378 - Returned 200 financial data points to senator@example.com
+2025-09-03 00:39:46.040 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:39:46.050 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 00:39:46.240 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 2}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 00:39:46.337 | INFO | app.routers.financial_data:get_financial_data:218 - Financial data request by senator@example.com
+2025-09-03 00:39:46.572 | INFO | app.routers.financial_data:get_financial_data:378 - Returned 200 financial data points to senator@example.com
+2025-09-03 00:39:46.627 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:42:47.586 | INFO | app.main:add_process_time_header:63 - Request received: POST /auth/token
+2025-09-03 00:42:47.989 | INFO | app.routers.auth:login_for_access_token:108 - User logged in: base@example.com
+2025-09-03 00:42:48.036 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:42:48.040 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 00:42:48.228 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 00:42:48.323 | INFO | app.routers.financial_data:get_financial_data:218 - Financial data request by base@example.com
+2025-09-03 00:42:48.643 | INFO | app.routers.financial_data:get_financial_data:378 - Returned 200 financial data points to base@example.com
+2025-09-03 00:42:48.696 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:42:48.701 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 00:42:48.888 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 00:42:48.982 | INFO | app.routers.financial_data:get_financial_data:218 - Financial data request by base@example.com
+2025-09-03 00:42:49.148 | INFO | app.routers.financial_data:get_financial_data:378 - Returned 200 financial data points to base@example.com
+2025-09-03 00:42:49.200 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:42:49.208 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 00:42:49.394 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 00:42:49.490 | INFO | app.routers.financial_data:get_financial_data:218 - Financial data request by base@example.com
+2025-09-03 00:42:49.656 | INFO | app.routers.financial_data:get_financial_data:378 - Returned 200 financial data points to base@example.com
+2025-09-03 00:42:49.709 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:42:49.714 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 00:42:49.901 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 00:42:49.997 | INFO | app.routers.financial_data:get_financial_data:218 - Financial data request by base@example.com
+2025-09-03 00:42:50.166 | INFO | app.routers.financial_data:get_financial_data:378 - Returned 200 financial data points to base@example.com
+2025-09-03 00:42:50.219 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:42:50.224 | INFO | app.main:add_process_time_header:63 - Request received: POST /auth/token
+2025-09-03 00:42:50.559 | INFO | app.routers.auth:login_for_access_token:108 - User logged in: admin@example.com
+2025-09-03 00:42:50.609 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:42:50.612 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 00:42:50.796 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 3}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 00:42:50.892 | INFO | app.routers.financial_data:get_financial_data:218 - Financial data request by admin@example.com
+2025-09-03 00:42:51.069 | INFO | app.routers.financial_data:get_financial_data:378 - Returned 200 financial data points to admin@example.com
+2025-09-03 00:42:51.120 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:42:51.126 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 00:42:51.804 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 3}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 00:42:51.901 | INFO | app.routers.financial_data:get_financial_data:218 - Financial data request by admin@example.com
+2025-09-03 00:42:52.196 | INFO | app.routers.financial_data:get_financial_data:378 - Returned 200 financial data points to admin@example.com
+2025-09-03 00:42:52.249 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:42:52.256 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 00:42:52.441 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 3}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 00:42:52.821 | INFO | app.routers.financial_data:get_financial_data:218 - Financial data request by admin@example.com
+2025-09-03 00:42:53.242 | INFO | app.routers.financial_data:get_financial_data:378 - Returned 200 financial data points to admin@example.com
+2025-09-03 00:42:53.394 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:42:53.399 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 00:42:53.585 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 3}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 00:42:53.679 | INFO | app.routers.financial_data:get_financial_data:218 - Financial data request by admin@example.com
+2025-09-03 00:42:53.964 | INFO | app.routers.financial_data:get_financial_data:378 - Returned 200 financial data points to admin@example.com
+2025-09-03 00:42:54.015 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:42:54.022 | INFO | app.main:add_process_time_header:63 - Request received: POST /auth/token
+2025-09-03 00:42:54.458 | INFO | app.routers.auth:login_for_access_token:108 - User logged in: senator@example.com
+2025-09-03 00:42:54.624 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:42:54.628 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 00:42:54.813 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 2}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 00:42:54.908 | INFO | app.routers.financial_data:get_financial_data:218 - Financial data request by senator@example.com
+2025-09-03 00:42:55.193 | INFO | app.routers.financial_data:get_financial_data:378 - Returned 200 financial data points to senator@example.com
+2025-09-03 00:42:55.243 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:42:55.249 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 00:42:55.537 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 2}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 00:42:55.635 | INFO | app.routers.financial_data:get_financial_data:218 - Financial data request by senator@example.com
+2025-09-03 00:42:55.940 | INFO | app.routers.financial_data:get_financial_data:378 - Returned 200 financial data points to senator@example.com
+2025-09-03 00:42:55.993 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:42:55.998 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 00:42:56.185 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 2}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 00:42:56.284 | INFO | app.routers.financial_data:get_financial_data:218 - Financial data request by senator@example.com
+2025-09-03 00:42:56.460 | INFO | app.routers.financial_data:get_financial_data:378 - Returned 200 financial data points to senator@example.com
+2025-09-03 00:42:56.510 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:42:56.516 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 00:42:56.704 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 2}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 00:42:56.802 | INFO | app.routers.financial_data:get_financial_data:218 - Financial data request by senator@example.com
+2025-09-03 00:42:56.981 | INFO | app.routers.financial_data:get_financial_data:378 - Returned 200 financial data points to senator@example.com
+2025-09-03 00:42:57.033 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:44:53.411 | INFO | app.main:add_process_time_header:63 - Request received: POST /auth/token
+2025-09-03 00:44:53.751 | INFO | app.routers.auth:login_for_access_token:108 - User logged in: base@example.com
+2025-09-03 00:44:53.800 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:44:53.804 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 00:44:54.050 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 00:44:54.152 | INFO | app.routers.financial_data:get_financial_data:218 - Financial data request by base@example.com
+2025-09-03 00:44:54.661 | INFO | app.routers.financial_data:get_financial_data:378 - Returned 200 financial data points to base@example.com
+2025-09-03 00:44:54.951 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:44:54.958 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 00:44:55.978 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 00:44:56.314 | INFO | app.routers.financial_data:get_financial_data:218 - Financial data request by base@example.com
+2025-09-03 00:44:56.858 | INFO | app.routers.financial_data:get_financial_data:378 - Returned 200 financial data points to base@example.com
+2025-09-03 00:44:57.013 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:44:57.024 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 00:44:57.441 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 00:44:57.633 | INFO | app.routers.financial_data:get_financial_data:218 - Financial data request by base@example.com
+2025-09-03 00:44:58.310 | INFO | app.routers.financial_data:get_financial_data:378 - Returned 200 financial data points to base@example.com
+2025-09-03 00:44:58.619 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:44:58.627 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 00:44:59.327 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 00:44:59.683 | INFO | app.routers.financial_data:get_financial_data:218 - Financial data request by base@example.com
+2025-09-03 00:45:00.542 | INFO | app.routers.financial_data:get_financial_data:378 - Returned 200 financial data points to base@example.com
+2025-09-03 00:45:00.891 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:45:00.899 | INFO | app.main:add_process_time_header:63 - Request received: POST /auth/token
+2025-09-03 00:45:01.243 | INFO | app.routers.auth:login_for_access_token:108 - User logged in: admin@example.com
+2025-09-03 00:45:01.946 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:45:01.950 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 00:45:02.983 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 3}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 00:45:03.348 | INFO | app.routers.financial_data:get_financial_data:218 - Financial data request by admin@example.com
+2025-09-03 00:45:04.227 | INFO | app.routers.financial_data:get_financial_data:378 - Returned 200 financial data points to admin@example.com
+2025-09-03 00:45:04.580 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:45:04.586 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 00:45:06.084 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 3}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 00:45:06.183 | INFO | app.routers.financial_data:get_financial_data:218 - Financial data request by admin@example.com
+2025-09-03 00:45:06.543 | INFO | app.routers.financial_data:get_financial_data:378 - Returned 200 financial data points to admin@example.com
+2025-09-03 00:45:06.596 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:45:06.604 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 00:45:06.827 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 3}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 00:45:06.930 | INFO | app.routers.financial_data:get_financial_data:218 - Financial data request by admin@example.com
+2025-09-03 00:45:07.117 | INFO | app.routers.financial_data:get_financial_data:378 - Returned 200 financial data points to admin@example.com
+2025-09-03 00:45:07.169 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:45:07.175 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 00:45:07.375 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 3}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 00:45:07.487 | INFO | app.routers.financial_data:get_financial_data:218 - Financial data request by admin@example.com
+2025-09-03 00:45:07.710 | INFO | app.routers.financial_data:get_financial_data:378 - Returned 200 financial data points to admin@example.com
+2025-09-03 00:45:07.762 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:45:07.769 | INFO | app.main:add_process_time_header:63 - Request received: POST /auth/token
+2025-09-03 00:45:08.114 | INFO | app.routers.auth:login_for_access_token:108 - User logged in: senator@example.com
+2025-09-03 00:45:08.168 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:45:08.172 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 00:45:08.418 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 2}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 00:45:08.538 | INFO | app.routers.financial_data:get_financial_data:218 - Financial data request by senator@example.com
+2025-09-03 00:45:08.791 | INFO | app.routers.financial_data:get_financial_data:378 - Returned 200 financial data points to senator@example.com
+2025-09-03 00:45:08.840 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:45:08.845 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 00:45:09.066 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 2}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 00:45:09.178 | INFO | app.routers.financial_data:get_financial_data:218 - Financial data request by senator@example.com
+2025-09-03 00:45:09.426 | INFO | app.routers.financial_data:get_financial_data:378 - Returned 200 financial data points to senator@example.com
+2025-09-03 00:45:09.510 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:45:09.518 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 00:45:09.746 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 2}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 00:45:09.846 | INFO | app.routers.financial_data:get_financial_data:218 - Financial data request by senator@example.com
+2025-09-03 00:45:10.049 | INFO | app.routers.financial_data:get_financial_data:378 - Returned 200 financial data points to senator@example.com
+2025-09-03 00:45:10.104 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:45:10.111 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 00:45:10.319 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 2}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 00:45:10.422 | INFO | app.routers.financial_data:get_financial_data:218 - Financial data request by senator@example.com
+2025-09-03 00:45:10.594 | INFO | app.routers.financial_data:get_financial_data:378 - Returned 200 financial data points to senator@example.com
+2025-09-03 00:45:10.645 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:46:19.627 | INFO | app.main:add_process_time_header:63 - Request received: POST /auth/token
+2025-09-03 00:46:19.973 | INFO | app.routers.auth:login_for_access_token:108 - User logged in: base@example.com
+2025-09-03 00:46:20.020 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:46:20.031 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 00:46:20.032 | INFO | app.main:add_process_time_header:78 - Response sent: 401
+2025-09-03 00:46:49.026 | INFO | app.main:add_process_time_header:63 - Request received: POST /auth/token
+2025-09-03 00:46:49.365 | INFO | app.routers.auth:login_for_access_token:108 - User logged in: base@example.com
+2025-09-03 00:46:49.411 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:46:49.414 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 00:46:49.601 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 00:46:49.698 | INFO | app.routers.financial_data:get_financial_data:218 - Financial data request by base@example.com
+2025-09-03 00:46:49.857 | INFO | app.routers.financial_data:get_financial_data:378 - Returned 50 financial data points to base@example.com
+2025-09-03 00:46:49.903 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:47:09.223 | INFO | app.main:add_process_time_header:63 - Request received: POST /auth/token
+2025-09-03 00:47:09.558 | INFO | app.routers.auth:login_for_access_token:108 - User logged in: base@example.com
+2025-09-03 00:47:09.604 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:47:09.607 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 00:47:09.798 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 00:47:09.894 | INFO | app.routers.financial_data:get_financial_data:218 - Financial data request by base@example.com
+2025-09-03 00:47:10.058 | INFO | app.routers.financial_data:get_financial_data:378 - Returned 50 financial data points to base@example.com
+2025-09-03 00:47:10.107 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:47:37.755 | INFO | app.main:add_process_time_header:63 - Request received: POST /auth/token
+2025-09-03 00:47:38.093 | INFO | app.routers.auth:login_for_access_token:108 - User logged in: base@example.com
+2025-09-03 00:47:38.142 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:47:38.146 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 00:47:38.332 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 00:47:38.428 | INFO | app.routers.financial_data:get_financial_data:218 - Financial data request by base@example.com
+2025-09-03 00:47:38.589 | INFO | app.routers.financial_data:get_financial_data:378 - Returned 50 financial data points to base@example.com
+2025-09-03 00:47:38.640 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:48:02.064 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-09-03 00:48:02.067 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-09-03 00:48:11.261 | INFO | app.main:add_process_time_header:63 - Request received: POST /auth/token
+2025-09-03 00:48:12.334 | INFO | app.routers.auth:login_for_access_token:108 - User logged in: base@example.com
+2025-09-03 00:48:12.381 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:48:12.385 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 00:48:12.577 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 00:48:12.674 | INFO | app.routers.financial_data:get_financial_data:236 - Financial data request by base@example.com
+2025-09-03 00:48:12.674 | INFO | app.routers.financial_data:get_financial_data:256 - ASSET DEBUG - User: base@example.com, Asset type: 'etf'
+2025-09-03 00:48:12.675 | INFO | app.routers.financial_data:get_financial_data:257 - ASSET DEBUG - Allowed symbols count: 46
+2025-09-03 00:48:12.675 | INFO | app.routers.financial_data:get_financial_data:258 - ASSET DEBUG - First 5 allowed symbols: ['ACWI', 'AFTY', 'AGG', 'ARKK', 'BND']
+2025-09-03 00:48:12.727 | INFO | app.routers.financial_data:get_financial_data:386 - ETF DEBUG - Final query: SELECT "observation_date", "symbol", "asset_type", "volume", "trades", "open_price", "close_price", "high_price", "low_price", "gk", "rsp5", "rv1", "rq5_ss", "rq1", "rv5", "rsp1", "bv5_ss", "bv1", "pv", "bv5", "rsp5_ss", "medrv5", "medrv5_ss", "rsn5_ss", "rv5_ss", "minrv5_ss", "minrv1", "medrv1", "rq5", "rk", "minrv5", "rsn5", "rr5", "rsn1" FROM realized_volatility_data WHERE 1=1  AND symbol IN (:allowed_symbol0, :allowed_symbol1, :allowed_symbol2, :allowed_symbol3, :allowed_symbol4, :allowed_symbol5, :allowed_symbol6, :allowed_symbol7, :allowed_symbol8, :allowed_symbol9, :allowed_symbol10, :allowed_symbol11, :allowed_symbol12, :allowed_symbol13, :allowed_symbol14, :allowed_symbol15, :allowed_symbol16, :allowed_symbol17, :allowed_symbol18, :allowed_symbol19, :allowed_symbol20, :allowed_symbol21, :allowed_symbol22, :allowed_symbol23, :allowed_symbol24, :allowed_symbol25, :allowed_symbol26, :allowed_symbol27, :allowed_symbol28, :allowed_symbol29, :allowed_symbol30, :allowed_symbol31, :allowed_symbol32, :allowed_symbol33, :allowed_symbol34, :allowed_symbol35, :allowed_symbol36, :allowed_symbol37, :allowed_symbol38, :allowed_symbol39, :allowed_symbol40, :allowed_symbol41, :allowed_symbol42, :allowed_symbol43, :allowed_symbol44, :allowed_symbol45)  AND asset_type = :asset_type ORDER BY observation_date DESC, symbol LIMIT :limit OFFSET :offset
+2025-09-03 00:48:12.727 | INFO | app.routers.financial_data:get_financial_data:387 - ETF DEBUG - Query params: {'allowed_symbol0': 'ACWI', 'allowed_symbol1': 'AFTY', 'allowed_symbol2': 'AGG', 'allowed_symbol3': 'ARKK', 'allowed_symbol4': 'BND', 'allowed_symbol5': 'DIA', 'allowed_symbol6': 'EEM', 'allowed_symbol7': 'EFIV', 'allowed_symbol8': 'ESGU', 'allowed_symbol9': 'ESGV', 'allowed_symbol10': 'EWC', 'allowed_symbol11': 'EWH', 'allowed_symbol12': 'EWI', 'allowed_symbol13': 'EWJ', 'allowed_symbol14': 'EWP', 'allowed_symbol15': 'EWU', 'allowed_symbol16': 'EWZ', 'allowed_symbol17': 'FLCH', 'allowed_symbol18': 'GLD', 'allowed_symbol19': 'GWL', 'allowed_symbol20': 'ICLN', 'allowed_symbol21': 'IEUR', 'allowed_symbol22': 'IJH', 'allowed_symbol23': 'IJR', 'allowed_symbol24': 'IOO', 'allowed_symbol25': 'IVOO', 'allowed_symbol26': 'IYT', 'allowed_symbol27': 'IYY', 'allowed_symbol28': 'MCHI', 'allowed_symbol29': 'MDY', 'allowed_symbol30': 'NKY', 'allowed_symbol31': 'QQQ', 'allowed_symbol32': 'SLV', 'allowed_symbol33': 'SPLG', 'allowed_symbol34': 'SPSM', 'allowed_symbol35': 'SPY', 'allowed_symbol36': 'SUSA', 'allowed_symbol37': 'VEU', 'allowed_symbol38': 'VGK', 'allowed_symbol39': 'VIOO', 'allowed_symbol40': 'VOO', 'allowed_symbol41': 'VPU', 'allowed_symbol42': 'VTI', 'allowed_symbol43': 'XLI', 'allowed_symbol44': 'XLU', 'allowed_symbol45': 'XTN', 'asset_type': 'ETFs', 'limit': 50, 'offset': 0}
+2025-09-03 00:48:12.833 | INFO | app.routers.financial_data:get_financial_data:407 - Returned 50 financial data points to base@example.com
+2025-09-03 00:48:12.881 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:49:03.225 | INFO | app.main:add_process_time_header:63 - Request received: POST /auth/token
+2025-09-03 00:49:03.571 | INFO | app.routers.auth:login_for_access_token:108 - User logged in: base@example.com
+2025-09-03 00:49:03.619 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:49:03.622 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 00:49:03.807 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 00:49:03.902 | INFO | app.routers.financial_data:get_financial_data:236 - Financial data request by base@example.com
+2025-09-03 00:49:03.903 | INFO | app.routers.financial_data:get_financial_data:256 - ASSET DEBUG - User: base@example.com, Asset type: 'etf'
+2025-09-03 00:49:03.903 | INFO | app.routers.financial_data:get_financial_data:257 - ASSET DEBUG - Allowed symbols count: 46
+2025-09-03 00:49:03.903 | INFO | app.routers.financial_data:get_financial_data:258 - ASSET DEBUG - First 5 allowed symbols: ['ACWI', 'AFTY', 'AGG', 'ARKK', 'BND']
+2025-09-03 00:49:03.952 | INFO | app.routers.financial_data:get_financial_data:386 - ETF DEBUG - Final query: SELECT "observation_date", "symbol", "asset_type", "volume", "trades", "open_price", "close_price", "high_price", "low_price", "gk", "rsp5", "rv1", "rq5_ss", "rq1", "rv5", "rsp1", "bv5_ss", "bv1", "pv", "bv5", "rsp5_ss", "medrv5", "medrv5_ss", "rsn5_ss", "rv5_ss", "minrv5_ss", "minrv1", "medrv1", "rq5", "rk", "minrv5", "rsn5", "rr5", "rsn1" FROM realized_volatility_data WHERE 1=1  AND symbol IN (:allowed_symbol0, :allowed_symbol1, :allowed_symbol2, :allowed_symbol3, :allowed_symbol4, :allowed_symbol5, :allowed_symbol6, :allowed_symbol7, :allowed_symbol8, :allowed_symbol9, :allowed_symbol10, :allowed_symbol11, :allowed_symbol12, :allowed_symbol13, :allowed_symbol14, :allowed_symbol15, :allowed_symbol16, :allowed_symbol17, :allowed_symbol18, :allowed_symbol19, :allowed_symbol20, :allowed_symbol21, :allowed_symbol22, :allowed_symbol23, :allowed_symbol24, :allowed_symbol25, :allowed_symbol26, :allowed_symbol27, :allowed_symbol28, :allowed_symbol29, :allowed_symbol30, :allowed_symbol31, :allowed_symbol32, :allowed_symbol33, :allowed_symbol34, :allowed_symbol35, :allowed_symbol36, :allowed_symbol37, :allowed_symbol38, :allowed_symbol39, :allowed_symbol40, :allowed_symbol41, :allowed_symbol42, :allowed_symbol43, :allowed_symbol44, :allowed_symbol45)  AND asset_type = :asset_type ORDER BY observation_date DESC, symbol LIMIT :limit OFFSET :offset
+2025-09-03 00:49:03.953 | INFO | app.routers.financial_data:get_financial_data:387 - ETF DEBUG - Query params: {'allowed_symbol0': 'ACWI', 'allowed_symbol1': 'AFTY', 'allowed_symbol2': 'AGG', 'allowed_symbol3': 'ARKK', 'allowed_symbol4': 'BND', 'allowed_symbol5': 'DIA', 'allowed_symbol6': 'EEM', 'allowed_symbol7': 'EFIV', 'allowed_symbol8': 'ESGU', 'allowed_symbol9': 'ESGV', 'allowed_symbol10': 'EWC', 'allowed_symbol11': 'EWH', 'allowed_symbol12': 'EWI', 'allowed_symbol13': 'EWJ', 'allowed_symbol14': 'EWP', 'allowed_symbol15': 'EWU', 'allowed_symbol16': 'EWZ', 'allowed_symbol17': 'FLCH', 'allowed_symbol18': 'GLD', 'allowed_symbol19': 'GWL', 'allowed_symbol20': 'ICLN', 'allowed_symbol21': 'IEUR', 'allowed_symbol22': 'IJH', 'allowed_symbol23': 'IJR', 'allowed_symbol24': 'IOO', 'allowed_symbol25': 'IVOO', 'allowed_symbol26': 'IYT', 'allowed_symbol27': 'IYY', 'allowed_symbol28': 'MCHI', 'allowed_symbol29': 'MDY', 'allowed_symbol30': 'NKY', 'allowed_symbol31': 'QQQ', 'allowed_symbol32': 'SLV', 'allowed_symbol33': 'SPLG', 'allowed_symbol34': 'SPSM', 'allowed_symbol35': 'SPY', 'allowed_symbol36': 'SUSA', 'allowed_symbol37': 'VEU', 'allowed_symbol38': 'VGK', 'allowed_symbol39': 'VIOO', 'allowed_symbol40': 'VOO', 'allowed_symbol41': 'VPU', 'allowed_symbol42': 'VTI', 'allowed_symbol43': 'XLI', 'allowed_symbol44': 'XLU', 'allowed_symbol45': 'XTN', 'asset_type': 'ETFs', 'limit': 500, 'offset': 0}
+2025-09-03 00:49:04.228 | INFO | app.routers.financial_data:get_financial_data:407 - Returned 500 financial data points to base@example.com
+2025-09-03 00:49:04.284 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:55:51.589 | INFO | app.main:add_process_time_header:63 - Request received: POST /auth/token
+2025-09-03 00:55:51.936 | INFO | app.routers.auth:login_for_access_token:108 - User logged in: base@example.com
+2025-09-03 00:55:51.982 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:55:51.987 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 00:55:52.186 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 00:55:52.285 | INFO | app.routers.financial_data:get_financial_data:236 - Financial data request by base@example.com
+2025-09-03 00:55:52.286 | INFO | app.routers.financial_data:get_financial_data:256 - ASSET DEBUG - User: base@example.com, Asset type: 'futures'
+2025-09-03 00:55:52.286 | INFO | app.routers.financial_data:get_financial_data:257 - ASSET DEBUG - Allowed symbols count: 4
+2025-09-03 00:55:52.286 | INFO | app.routers.financial_data:get_financial_data:258 - ASSET DEBUG - First 5 allowed symbols: ['CL', 'ES', 'GC', 'NG']
+2025-09-03 00:55:52.555 | INFO | app.routers.financial_data:get_financial_data:407 - Returned 100 financial data points to base@example.com
+2025-09-03 00:55:52.607 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:56:19.965 | INFO | app.main:add_process_time_header:63 - Request received: POST /auth/token
+2025-09-03 00:56:20.308 | INFO | app.routers.auth:login_for_access_token:108 - User logged in: base@example.com
+2025-09-03 00:56:20.354 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 00:56:20.358 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 00:56:20.550 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 00:56:20.655 | INFO | app.routers.financial_data:get_financial_data:236 - Financial data request by base@example.com
+2025-09-03 00:56:20.655 | INFO | app.routers.financial_data:get_financial_data:256 - ASSET DEBUG - User: base@example.com, Asset type: 'stocks'
+2025-09-03 00:56:20.655 | INFO | app.routers.financial_data:get_financial_data:257 - ASSET DEBUG - Allowed symbols count: 40
+2025-09-03 00:56:20.656 | INFO | app.routers.financial_data:get_financial_data:258 - ASSET DEBUG - First 5 allowed symbols: ['AAPL', 'ADBE', 'AMD', 'AMZN', 'AXP']
+2025-09-03 00:56:21.360 | INFO | app.routers.financial_data:get_financial_data:407 - Returned 200 financial data points to base@example.com
+2025-09-03 00:56:21.415 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 01:00:57.781 | INFO | app.main:add_process_time_header:63 - Request received: POST /auth/token
+2025-09-03 01:00:59.854 | INFO | app.routers.auth:login_for_access_token:108 - User logged in: base@example.com
+2025-09-03 01:01:01.410 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 01:01:01.413 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 01:01:06.743 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 01:01:06.854 | INFO | app.routers.financial_data:get_financial_data:236 - Financial data request by base@example.com
+2025-09-03 01:01:06.854 | INFO | app.routers.financial_data:get_financial_data:256 - ASSET DEBUG - User: base@example.com, Asset type: 'forex'
+2025-09-03 01:01:06.854 | INFO | app.routers.financial_data:get_financial_data:257 - ASSET DEBUG - Allowed symbols count: 5
+2025-09-03 01:01:06.854 | INFO | app.routers.financial_data:get_financial_data:258 - ASSET DEBUG - First 5 allowed symbols: ['AUDUSD', 'CADUSD', 'EURUSD', 'GBPUSD', 'JPYUSD']
+2025-09-03 01:01:07.150 | INFO | app.routers.financial_data:get_financial_data:407 - Returned 50 financial data points to base@example.com
+2025-09-03 01:01:07.204 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 01:01:07.208 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data/download
+2025-09-03 01:01:07.821 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 01:01:08.524 | INFO | app.routers.financial_data:download_financial_data:536 - Download request by base@example.com
+2025-09-03 01:01:29.214 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 01:01:29.218 | INFO | app.routers.financial_data:cleanup_old_downloads:62 - Removed old download file: financial_data_20_symbols_20250721_165450.csv
+2025-09-03 01:02:21.990 | INFO | app.main:add_process_time_header:63 - Request received: GET /
+2025-09-03 01:02:22.001 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 01:02:24.685 | INFO | app.main:add_process_time_header:63 - Request received: GET /docs
+2025-09-03 01:02:24.686 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 01:02:26.721 | INFO | app.main:add_process_time_header:63 - Request received: GET /openapi.json
+2025-09-03 01:02:26.764 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 01:03:05.986 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data/download
+2025-09-03 01:03:06.002 | INFO | app.main:add_process_time_header:78 - Response sent: 401
+2025-09-03 01:03:21.691 | INFO | app.main:add_process_time_header:63 - Request received: POST /auth/token
+2025-09-03 01:03:22.055 | INFO | app.routers.auth:login_for_access_token:108 - User logged in: admin@example.com
+2025-09-03 01:03:22.111 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 01:03:26.178 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data/download
+2025-09-03 01:03:26.383 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 3}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 01:03:26.495 | INFO | app.routers.financial_data:download_financial_data:536 - Download request by admin@example.com
+2025-09-03 01:03:29.475 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 01:03:51.470 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data/download
+2025-09-03 01:03:51.728 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 3}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 01:03:51.833 | INFO | app.routers.financial_data:download_financial_data:536 - Download request by admin@example.com
+2025-09-03 01:03:52.778 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 01:05:18.944 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-09-03 01:05:18.946 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-09-03 01:07:02.590 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-09-03 01:07:02.610 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-09-03 01:07:17.191 | INFO | app.main:add_process_time_header:63 - Request received: GET /docs
+2025-09-03 01:07:17.192 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 01:07:25.514 | INFO | app.main:add_process_time_header:63 - Request received: POST /auth/token
+2025-09-03 01:07:26.631 | INFO | app.routers.auth:login_for_access_token:108 - User logged in: base@example.com
+2025-09-03 01:07:26.680 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 01:07:26.684 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 01:07:26.882 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 01:07:26.979 | INFO | app.routers.financial_data:get_financial_data:236 - Financial data request by base@example.com
+2025-09-03 01:07:27.182 | INFO | app.routers.financial_data:get_financial_data:398 - Returned 50 financial data points to base@example.com
+2025-09-03 01:07:27.229 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 01:07:37.096 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-09-03 01:07:37.098 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-09-03 01:07:41.753 | INFO | app.main:add_process_time_header:63 - Request received: POST /auth/token
+2025-09-03 01:07:44.278 | INFO | app.routers.auth:login_for_access_token:108 - User logged in: base@example.com
+2025-09-03 01:07:44.419 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 01:07:45.446 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-09-03 01:07:45.447 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-09-03 01:07:45.468 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data
+2025-09-03 01:07:46.352 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 01:07:46.451 | INFO | app.routers.financial_data:get_financial_data:236 - Financial data request by base@example.com
+2025-09-03 01:07:46.652 | INFO | app.routers.financial_data:get_financial_data:398 - Returned 50 financial data points to base@example.com
+2025-09-03 01:07:46.699 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 01:07:46.703 | INFO | app.main:add_process_time_header:63 - Request received: GET /financial-data/download
+2025-09-03 01:07:46.894 | INFO | app.core.dependencies:get_user_access_limits:91 - asset_access_limits table not found, using new permission system: (psycopg2.errors.UndefinedTable) relation "asset_access_limits" does not exist
+LINE 3:             FROM asset_access_limits
+                         ^
+
+[SQL: 
+            SELECT asset_category, max_items 
+            FROM asset_access_limits
+            WHERE role_id = %(role_id)s
+        ]
+[parameters: {'role_id': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-03 01:07:46.988 | INFO | app.routers.financial_data:download_financial_data:527 - Download request by base@example.com
+2025-09-03 01:07:56.922 | INFO | app.main:add_process_time_header:78 - Response sent: 200
+2025-09-03 01:08:14.297 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-09-03 01:08:14.300 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-09-03 01:08:17.389 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-09-03 01:08:17.391 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-09-03 01:08:18.197 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-09-03 01:08:18.199 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-09-03 01:08:21.195 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-09-03 01:08:21.198 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-09-03 01:08:48.938 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-09-03 01:08:48.940 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-09-03 01:09:04.877 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-09-03 01:09:04.881 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-09-03 01:09:08.173 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-09-03 01:09:08.175 | INFO | app.core.logging:setup_logging:102 - Logging system initialized

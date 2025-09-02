@@ -28,11 +28,14 @@ from ..core.exceptions import AccessLimitExceeded, ResourceNotFound
 
 # Asset type mapping to handle different names for the same type
 ASSET_TYPE_MAPPING = {
-    "stock": "equity",
-    "equity": "equity",
-    "fx": "fx",
-    "forex": "fx",
-    "crypto": "crypto"
+    "stock": "stocks",
+    "stocks": "stocks", 
+    "equity": "stocks",
+    "fx": "forex",
+    "forex": "forex",
+    "futures": "futures",
+    "etf": "ETFs",
+    "etfs": "ETFs"
 }
 
 router = APIRouter(prefix="/financial-data", tags=["financial-data"], responses={
@@ -61,15 +64,33 @@ def cleanup_old_downloads():
                 logger.error(f"Error removing file {filename}: {e}")
 
 
-def get_user_allowed_symbols(accessible_assets: Dict[str, List[str]], current_user: UserInDB) -> List[str]:
-    """Get all symbols the user is allowed to access"""
+def get_user_allowed_symbols(accessible_assets: Dict[str, List[str]], current_user: UserInDB, asset_type: Optional[str] = None) -> List[str]:
+    """Get all symbols the user is allowed to access, optionally filtered by asset type"""
     if current_user.role_name == "admin":
         return []  # Empty list means no restrictions for admin
     
-    # Collect all symbols from all categories the user has access to
     allowed_symbols = []
-    for category, symbols in accessible_assets.items():
-        allowed_symbols.extend(symbols)
+    
+    if asset_type:
+        # If specific asset type requested, only return symbols for that type
+        normalized_type = ASSET_TYPE_MAPPING.get(asset_type.lower(), asset_type)
+        
+        # Map normalized types back to category names used in accessible_assets
+        category_mapping = {
+            "stocks": "stocks",
+            "forex": "forex", 
+            "futures": "futures",
+            "ETFs": "etf",
+            "etf": "etf"  # Handle both normalized and original forms
+        }
+        
+        category = category_mapping.get(normalized_type)
+        if category and category in accessible_assets:
+            allowed_symbols.extend(accessible_assets[category])
+    else:
+        # No specific asset type, return all symbols
+        for category, symbols in accessible_assets.items():
+            allowed_symbols.extend(symbols)
     
     return allowed_symbols
 
@@ -227,9 +248,10 @@ async def get_financial_data(
     elif symbols:
         symbol_list = symbols
     
-    # Get allowed symbols for this user
-    allowed_symbols = get_user_allowed_symbols(accessible_assets, current_user)
+    # Get allowed symbols for this user (filtered by asset type if specified)
+    allowed_symbols = get_user_allowed_symbols(accessible_assets, current_user, asset_type)
     
+
     # Apply access limits
     effective_limit = apply_access_limits(
         asset_type, 
@@ -354,6 +376,7 @@ async def get_financial_data(
         params["offset"] = offset
     
     try:
+
         # Execute query
         results = db.execute(text(query), params).fetchall()
         
@@ -517,8 +540,8 @@ async def download_financial_data(
     elif symbols:
         symbol_list = symbols
     
-    # Get allowed symbols for this user
-    allowed_symbols = get_user_allowed_symbols(accessible_assets, current_user)
+    # Get allowed symbols for this user (filtered by asset type if specified)
+    allowed_symbols = get_user_allowed_symbols(accessible_assets, current_user, asset_type)
     
     # Apply access limits with strict enforcement for downloads
     try:
