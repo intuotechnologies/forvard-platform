@@ -1,0 +1,90 @@
+# postgres/docker-compose.yaml
+version: '3.8'
+
+services:
+  # Servizio PostgreSQL con TimescaleDB per i dati dell'applicazione
+  app_postgres:
+    image: timescale/timescaledb:latest-pg16 # Immagine con PostgreSQL 16 e TimescaleDB
+    container_name: forvard_app_postgres
+    restart: unless-stopped
+    shm_size: '1g'
+    environment:
+      POSTGRES_USER: ${POSTGRES_APP_USER:-appuser}
+      POSTGRES_PASSWORD: ${POSTGRES_APP_PASSWORD:-appsecretpassword}
+      POSTGRES_DB: ${POSTGRES_APP_DB:-appdb}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - app_postgres_data:/var/lib/postgresql/data # Volume per la persistenza dei dati
+      - ./init_db:/docker-entrypoint-initdb.d  # Monta la cartella con gli script SQL di inizializzazione
+    ports:
+      - "${POSTGRES_APP_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_APP_USER:-appuser} -d ${POSTGRES_APP_DB:-appdb}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - forvard_default_network
+
+  # Servizio pgAdmin per la gestione di PostgreSQL
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: forvard_pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@example.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-adminpassword}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    depends_on:
+      app_postgres:
+        condition: service_healthy
+    networks:
+      - forvard_default_network
+
+  # Servizio di Backup Esempio (Opzionale, da adattare)
+  postgres_backup:
+    image: timescale/timescaledb:latest-pg16 # Usa la stessa immagine per compatibilità con pg_dump
+    container_name: forvard_postgres_backup
+    restart: unless-stopped
+    volumes:
+      - ./backups:/backups # Assicurati che la cartella 'postgres/backups' esista sull'host
+    environment:
+      POSTGRES_HOST: app_postgres
+      POSTGRES_USER: ${POSTGRES_APP_USER:-appuser}
+      POSTGRES_PASSWORD: ${POSTGRES_APP_PASSWORD:-appsecretpassword}
+      POSTGRES_DB: ${POSTGRES_APP_DB:-appdb}
+      BACKUP_DIR: /backups
+      CRON_SCHEDULE: "0 2 * * *" # Esegue il backup ogni giorno alle 02:00
+    # Comando per configurare ed eseguire cron.
+    # Questo è un esempio; per produzione, considera un'immagine con cron già configurato
+    # o una soluzione di backup più robusta.
+    command: >
+      sh -c "
+        apk add --no-cache busybox-suid; # Aggiunge cron se non presente (per Alpine, l'immagine base di TimescaleDB)
+        echo \"${CRON_SCHEDULE} su-exec postgres pg_dump -h ${POSTGRES_HOST} -U ${POSTGRES_USER} -d ${POSTGRES_DB} | gzip > ${BACKUP_DIR}/backup_$$\(date +\\%Y-\\%m-\\%d_\\%H-\\%M-\\%S).sql.gz 2>&1\" > /etc/cron.d/backup_cron;
+        chmod 0644 /etc/cron.d/backup_cron;
+        crontab /etc/cron.d/backup_cron;
+        printenv | grep -E 'POSTGRES_|BACKUP_DIR|CRON_SCHEDULE' >> /etc/environment;
+        echo 'Avvio cron per backup PostgreSQL...';
+        exec crond -f -d 8;
+      "
+    depends_on:
+      app_postgres:
+        condition: service_healthy
+    networks:
+      - forvard_default_network
+
+volumes:
+  app_postgres_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+
+networks:
+  forvard_default_network:
+    external: true
+    name: forvard_network

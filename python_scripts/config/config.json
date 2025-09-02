@@ -1,0 +1,69 @@
+{
+    "credentials": {
+      "kibot_user": "${KIBOT_USER}",
+      "kibot_password": "${KIBOT_PASSWORD}"
+    },
+    "general": {
+      "base_dir": "${BASE_DIR}/data", 
+      "file_format": "parquet",
+      "early_closing_day_file": "${CONFIG_DIR}/early_closing_days.txt",
+      "execution_mode": "async",
+      "system_cores_reserved": 1,
+      "download_threads_reserved": 4, 
+      "processing_threads_reserved": 4,
+      "outliers_threads_max": 8,
+      "rv_threads_max": 8
+    },
+    "pipelines": {
+     "stocks_batch1": {
+        "enabled": true,
+        "asset_type": "stocks",
+        "symbols_file": "${CONFIG_DIR}/symbols_stocks.txt",
+        "date_range": {
+          "start_date": "03/01/2024",
+          "end_date": "03/01/2025"
+        },
+        "steps": ["download", "outliers", "realized_variance"]
+      },
+      "stocks_batch2": {
+        "enabled": false,
+        "asset_type": "stocks",
+        "symbols_file": "${CONFIG_DIR}/symbols_stocks2.txt",
+        "date_range": {
+          "start_date": "03/01/2024",
+          "end_date": "03/01/2025"
+        },
+        "steps": ["download", "outliers", "realized_variance"]
+      },
+      "ETFs": {
+        "enabled": false,
+        "asset_type": "ETFs",
+        "symbols_file": "${CONFIG_DIR}/ETFs_stocks.txt",
+        "date_range": {
+          "start_date": "03/01/2024",
+          "end_date": "03/01/2025"
+        },
+        "steps": ["download", "outliers", "realized_variance"]
+      },
+      "forex": {
+        "enabled": false,
+        "asset_type": "forex", 
+        "symbols_file": "${CONFIG_DIR}/symbols_forex.txt",
+        "date_range": {
+          "start_date": "03/01/2024",
+          "end_date": "03/01/2025"
+        },
+        "steps": ["download", "realized_variance"]
+      },
+      "futures": {
+        "enabled": false,
+        "asset_type": "futures",
+        "symbols_file": "${CONFIG_DIR}/symbols_futures.txt",
+        "date_range": {
+          "start_date": "03/01/2024", 
+          "end_date": "03/01/2025"
+        },
+        "steps": ["download", "realized_variance"]
+      }
+    }
+  }

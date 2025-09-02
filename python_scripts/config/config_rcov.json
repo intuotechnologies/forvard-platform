@@ -1,0 +1,44 @@
+{
+    "general": {
+      "base_dir": "${BASE_DIR}/data",
+      "file_format": "parquet",
+      "early_closing_day_file": "${CONFIG_DIR}/early_closing_days.txt",
+      "rv_threads_max": 8
+    },
+    "covariance_settings": {
+      "resample_freq": "1T",
+      "resampling_method": "last"
+    },
+    "pipelines": {
+      "mixed_assets": {
+        "enabled": false,
+        "asset_type": "mixed",
+        "symbols_file": "${CONFIG_DIR}/rcov_mixed_symbols.txt",
+        "measures": ["RCov", "RBPCov", "RSCov"],
+        "description": "Process all available dates (no date_range specified)"
+      },
+      "stocks": {
+        "enabled": false,
+        "asset_type": "stocks",
+        "symbols_file": "${CONFIG_DIR}/rcov_stocks_symbols.txt",
+        "measures": ["RCov", "RBPCov", "RSCov"],
+        "description": "Process all available dates (no date_range specified)"
+      },
+      "forex": {
+        "enabled": false,
+        "asset_type": "forex",
+        "date_range": {
+          "start_date": "03/01/2024",
+          "end_date": "03/01/2025"},
+        "symbols_file": "${CONFIG_DIR}/rcov_forex_symbols.txt",
+        "measures": ["RCov", "RBPCov", "RSCov"]
+      },
+      "futures": {
+        "enabled": true,
+        "asset_type": "futures",
+        "symbols_file": "${CONFIG_DIR}/rcov_futures_symbols.txt",
+        "measures": ["RCov", "RBPCov", "RSCov"],
+        "description": "Process all available dates (no date_range specified)"
+      }
+    }
+  }

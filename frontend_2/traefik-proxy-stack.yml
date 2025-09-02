@@ -1,0 +1,75 @@
+version: '3.8'
+
+# Stack Portainer per aggiungere HTTPS con Let's Encrypt
+# LASCIA il tuo frontend esistente, questo si mette solo davanti
+
+services:
+  # Traefik - Reverse proxy con Let's Encrypt
+  traefik:
+    image: traefik:v3.0
+    container_name: traefik-letsencrypt
+    restart: unless-stopped
+    ports:
+      - "80:80"    # HTTP (prenderà il posto del tuo frontend)
+      - "443:443"  # HTTPS (con certificati validi)
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik-ssl:/letsencrypt
+    command:
+      # Provider Docker
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      
+      # Entrypoints
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      
+      # Let's Encrypt AUTOMATICO
+      - --certificatesresolvers.letsencrypt.acme.tlschallenge=true
+      - --certificatesresolvers.letsencrypt.acme.email=salvini@unime.it  # CAMBIA!
+      - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
+      
+      # Redirect HTTP -> HTTPS automatico
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      
+      # Log
+      - --log.level=INFO
+    networks:
+      - proxy-network
+    labels:
+      - "traefik.enable=false"  # Non esporre Traefik stesso
+
+  # Servizio che punta al tuo frontend esistente
+  frontend-proxy:
+    image: alpine/socat  # Container leggero per il proxy
+    container_name: frontend-proxy
+    restart: unless-stopped
+    # Questo container farà da bridge verso il tuo frontend
+    command: 
+      - socat
+      - TCP-LISTEN:80,fork,reuseaddr
+      - TCP:host.docker.internal:8080  # Porta dove sposterai il tuo frontend
+    networks:
+      - proxy-network
+    labels:
+      - "traefik.enable=true"
+      
+      # Configurazione per volare.unime.it
+      - "traefik.http.routers.frontend.rule=Host(`volare.unime.it`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls.certresolver=letsencrypt"
+      
+      # Configurazione del servizio
+      - "traefik.http.services.frontend.loadbalancer.server.port=80"
+
+networks:
+  proxy-network:
+    driver: bridge
+
+volumes:
+  traefik-ssl:
+
+
+
+

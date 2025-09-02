@@ -1,0 +1,67 @@
+version: '3.8'
+
+# Stack Portainer per HTTPS automatico con Let's Encrypt
+# Il tuo frontend esistente non va toccato!
+
+services:
+  # Nginx Proxy - Reverse proxy automatico
+  nginx-proxy:
+    image: nginxproxy/nginx-proxy:latest
+    container_name: nginx-proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"    # Prende il posto del tuo frontend sulle porte pubbliche
+      - "443:443"  # HTTPS con certificati Let's Encrypt
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - nginx-certs:/etc/nginx/certs
+      - nginx-vhost:/etc/nginx/vhost.d
+      - nginx-html:/usr/share/nginx/html
+    networks:
+      - proxy-network
+    environment:
+      - DEFAULT_HOST=volare.unime.it
+
+  # Let's Encrypt Companion - Ottiene certificati automaticamente
+  letsencrypt:
+    image: nginxproxy/acme-companion:latest
+    container_name: letsencrypt-companion
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - nginx-certs:/etc/nginx/certs
+      - nginx-vhost:/etc/nginx/vhost.d
+      - nginx-html:/usr/share/nginx/html
+      - acme-state:/etc/acme.sh
+    networks:
+      - proxy-network
+    environment:
+      - DEFAULT_EMAIL=salvini@unime.it  # CAMBIA QUESTA EMAIL!
+    depends_on:
+      - nginx-proxy
+
+  # Whoami - Servizio di test (puoi rimuoverlo dopo)
+  whoami:
+    image: traefik/whoami:latest
+    container_name: test-service
+    restart: unless-stopped
+    networks:
+      - proxy-network
+    environment:
+      - VIRTUAL_HOST=test.volare.unime.it  # Per testare
+      - LETSENCRYPT_HOST=test.volare.unime.it
+      - LETSENCRYPT_EMAIL=salvini@unime.it
+
+networks:
+  proxy-network:
+    driver: bridge
+
+volumes:
+  nginx-certs:
+  nginx-vhost:
+  nginx-html:
+  acme-state:
+
+
+
+

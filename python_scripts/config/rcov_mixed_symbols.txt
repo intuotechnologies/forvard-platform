@@ -1,0 +1,9 @@
+# Mixed Assets Portfolio
+# Format: SYMBOL:ASSET_TYPE or [SECTION] followed by symbols
+
+GE:stocks
+JNJ:stocks
+EURUSD:FOREX
+JPYUSD:FOREX
+CL:FUTURES
+GC:FUTURES

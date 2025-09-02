@@ -1,0 +1,12 @@
+.logo {
+    font-size: 48px; /* aumenta dimensione logo */
+    font-weight: bold;
+    color: rgb(226, 255, 89);
+    text-decoration: none !important; /* forzare nessuna sottolineatura */
+    cursor: pointer;
+  }
+  
+  .logo:hover {
+    opacity: 0.8;
+    text-decoration: none !important; /* anche su hover */
+  }

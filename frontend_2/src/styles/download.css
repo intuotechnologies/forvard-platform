@@ -1,0 +1,232 @@
+/* Free Access Page Styles */
+.free-access-page {
+  background-color: #f5f4ec;
+  min-height: 100vh;
+  padding: 120px 0 40px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  font-family: 'Manrope', sans-serif;
+  color: #004e5a;
+}
+
+.free-access-container {
+  background: white;
+  max-width: 1024px;
+  margin: 0 auto;
+  border-radius: 20px;
+  padding: 0 20px;
+  box-shadow: 0 10px 30px rgba(0, 78, 90, 0.1);
+  width: 100%;
+}
+
+h1 {
+  text-align: center;
+  color: #004e5a;
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+}
+
+.subtitle {
+  text-align: center;
+  color: #2c5d66;
+  font-size: 1.1rem;
+  margin-bottom: 3rem;
+  line-height: 1.6;
+}
+
+/* Download Section Styles */
+.download-section {
+  margin-bottom: 4rem;
+}
+
+.download-section h2 {
+  color: #004e5a;
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 3px solid #004e5a;
+  display: inline-block;
+}
+
+.section-description {
+  color: #2c5d66;
+  font-size: 1rem;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+/* Download Links Styles */
+.download-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.download-link {
+  color: #004e5a;
+  background: #f8f9fa;
+  border: 2px solid #004e5a;
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  font-weight: 600;
+  font-size: 1rem;
+  font-family: 'Manrope', sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.download-link:hover {
+  background: #004e5a;
+  color: rgb(226, 255, 89);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 78, 90, 0.2);
+}
+
+/* Button States */
+.download-link.downloading {
+  opacity: 0.7;
+  pointer-events: none;
+  background: #e3f2fd;
+  border-color: #2196f3;
+  color: #1976d2;
+}
+
+.download-link.completed {
+  background: #d4edda;
+  border-color: #c3e6cb;
+  color: #155724;
+}
+
+.download-link.completed:hover {
+  background: #c3e6cb;
+  color: #0e4b1c;
+}
+
+.download-link.error {
+  background: #f8d7da;
+  border-color: #f5c6cb;
+  color: #721c24;
+}
+
+.download-link.error:hover {
+  background: #f5c6cb;
+  color: #5a1a1a;
+}
+
+.download-link.login-required {
+  background: #cce7ff;
+  border-color: #99d6ff;
+  color: #0066cc;
+}
+
+.download-link.login-required:hover {
+  background: #99d6ff;
+  color: #004499;
+}
+
+/* Spinner Animation */
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #ccc;
+  border-top: 2px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { 
+    transform: rotate(0deg); 
+  }
+  100% { 
+    transform: rotate(360deg); 
+  }
+}
+
+/* Documentation Section */
+.doc-links {
+  text-align: center;
+  margin-top: 3rem;
+}
+
+.info-box {
+  background: white;
+  border-left: 4px solid #004e5a;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin: 2rem 0;
+  text-align: left;
+  box-shadow: 0 4px 15px rgba(0, 78, 90, 0.05);
+}
+
+.info-box h3 {
+  color: #004e5a;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.info-box p {
+  color: #2c5d66;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.info-box a {
+  color: #004e5a;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.info-box a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .free-access-container {
+    padding: 2rem 1rem;
+  }
+  
+  h1 {
+    font-size: 2rem;
+  }
+  
+  .download-section h2 {
+    font-size: 1.5rem;
+  }
+  
+  .download-links {
+    gap: 0.5rem;
+  }
+  
+  .download-link {
+    font-size: 0.95rem;
+    padding: 0.8rem 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .free-access-page {
+    padding: 2rem 0.5rem;
+  }
+  
+  .free-access-container {
+    padding: 1.5rem 1rem;
+  }
+  
+  h1 {
+    font-size: 1.8rem;
+  }
+  
+  .download-link {
+    font-size: 0.9rem;
+    padding: 0.7rem 0.8rem;
+  }
+}
