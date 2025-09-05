@@ -10587,3 +10587,15 @@ LINE 3:             FROM asset_access_limits
 2025-09-03 01:09:04.881 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
 2025-09-03 01:09:08.173 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
 2025-09-03 01:09:08.175 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-09-03 01:58:32.072 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-09-03 01:58:32.099 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-09-03 01:58:33.048 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-09-03 01:58:33.050 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-09-03 01:58:35.051 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-09-03 01:58:35.055 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-09-03 02:00:03.796 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-09-03 02:00:03.814 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-09-03 02:00:04.803 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-09-03 02:00:04.806 | INFO | app.core.logging:setup_logging:102 - Logging system initialized
+2025-09-03 02:00:16.369 | INFO | app.core.logging:setup_logging:96 - File logging initialized at ./logs/api.log
+2025-09-03 02:00:16.372 | INFO | app.core.logging:setup_logging:102 - Logging system initialized

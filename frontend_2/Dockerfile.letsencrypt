@@ -1,0 +1,30 @@
+# Dockerfile per produzione con certificati Let's Encrypt esterni
+
+# Stage 1: Build dell'applicazione React
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+COPY package*.json ./
+RUN npm config set registry https://registry.npmjs.org/ && \
+    npm install --no-audit --no-fund --timeout=600000
+
+COPY . .
+RUN npm run build
+
+# Stage 2: Nginx per servire l'app con certificati Let's Encrypt esterni
+FROM nginx:alpine
+
+# Rimuovi la configurazione di default di nginx
+RUN rm /etc/nginx/conf.d/default.conf
+
+# Copia la configurazione per certificati Let's Encrypt
+COPY nginx-letsencrypt-ready.conf /etc/nginx/conf.d/default.conf
+
+# Copia i file buildati da React
+COPY --from=builder /app/build /usr/share/nginx/html
+
+# Esponi le porte 80 (HTTP) e 443 (HTTPS)
+EXPOSE 80 443
+
+# Avvia nginx
+CMD ["nginx", "-g", "daemon off;"]
